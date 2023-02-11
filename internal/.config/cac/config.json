@@ -1,0 +1,13 @@
+[
+  {
+    "name": "test_config",
+    "host": "localhost",
+    "appId": "testAppId",
+    "safe": "testSafe",
+    "json": false,
+    "maxConns": 8
+  },
+  {
+    "name": "test_config_2"
+  }
+]
