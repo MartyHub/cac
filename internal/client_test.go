@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -129,11 +130,15 @@ func TestClient_Run_InvalidJson(t *testing.T) {
 }
 
 func TestClient_Run_Retry(t *testing.T) {
+	mu := sync.RWMutex{}
 	objects := make(map[string]bool, 2)
 	client := newTestClient(
 		t,
 		func(w http.ResponseWriter, r *http.Request) {
 			object := r.URL.Query().Get("Object")
+
+			mu.Lock()
+			defer mu.Unlock()
 
 			if objects[object] {
 				_, _ = fmt.Fprintf(w, "{\"Content\": \"value for %s\"}\n", object)
