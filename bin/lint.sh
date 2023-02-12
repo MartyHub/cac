@@ -2,5 +2,5 @@
 
 set -eux
 
-go vet
+go vet ./...
 golangci-lint run
