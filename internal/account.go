@@ -75,6 +75,10 @@ func (acct *account) parseSuccess(data []byte) {
 	}
 }
 
+func (acct *account) String() string {
+	return fmt.Sprintf("%s # %d: status=%d, error=%v", acct.Object, acct.Try, acct.StatusCode, acct.Error)
+}
+
 func parseBody[T any](data []byte, result *T) error {
 	if err := json.Unmarshal(data, &result); err != nil {
 		return err

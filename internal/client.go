@@ -118,9 +118,15 @@ func (c Client) ok(accounts []account) bool {
 func (c Client) worker(in <-chan *account, out chan<- *account) {
 	for acct := range in {
 		for acct.run(c.params.MaxTries) {
+			// acct.Try is 0 on first step
 			time.Sleep(time.Duration(acct.Try*acct.Try*100) * time.Millisecond)
+
 			acct.newTry()
 			c.get(acct)
+
+			if !acct.ok() {
+				c.params.Errorf("Failed to get %v", acct)
+			}
 		}
 
 		out <- acct
