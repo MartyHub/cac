@@ -31,8 +31,9 @@ func NewClient(params Parameters) Client {
 				MaxConnsPerHost: params.MaxConns,
 				Proxy:           nil,
 				TLSClientConfig: &tls.Config{
-					Certificates: []tls.Certificate{cert},
-					MinVersion:   tls.VersionTLS12,
+					Certificates:  []tls.Certificate{cert},
+					MinVersion:    tls.VersionTLS12,
+					Renegotiation: tls.RenegotiateOnceAsClient,
 				},
 			},
 		},
