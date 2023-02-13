@@ -2,8 +2,10 @@ package internal
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -23,6 +25,8 @@ type Parameters struct {
 	MaxConns int
 	MaxTries int
 	Timeout  time.Duration
+
+	Version bool
 
 	log           *log.Logger
 	providedFlags map[string]bool
@@ -44,45 +48,72 @@ func (p Parameters) Fatalf(format string, v ...any) {
 	os.Exit(1)
 }
 
-func (p Parameters) Valid() bool {
-	result := true
+func (p Parameters) Valid() (bool, string) {
+	sb := strings.Builder{}
+	valid := true
 
 	if p.CertFile == "" {
-		p.Errorf("Certificate file is mandatory")
-		result = false
+		sb.WriteString("Certificate file is mandatory\n")
+		valid = false
 	}
 
 	if p.KeyFile == "" {
-		p.Errorf("Key file is mandatory")
-		result = false
+		sb.WriteString("Key file is mandatory\n")
+		valid = false
 	}
 
 	if p.Host == "" {
-		p.Errorf("Host is mandatory")
-		result = false
+		sb.WriteString("Host is mandatory\n")
+		valid = false
 	}
 
 	if p.AppId == "" {
-		p.Errorf("Application Id is mandatory")
-		result = false
+		sb.WriteString("Application Id is mandatory\n")
+		valid = false
 	}
 
 	if p.Safe == "" {
-		p.Errorf("Safe is mandatory")
-		result = false
+		sb.WriteString("Safe is mandatory\n")
+		valid = false
 	}
 
 	if len(p.Objects) == 0 {
-		p.Errorf("At least one object is mandatory")
-		result = false
+		sb.WriteString("At least one object is mandatory\n")
+		valid = false
 	}
 
 	if p.MaxTries <= 0 {
-		p.Errorf("Max tries must be > 0: %v", p.MaxTries)
-		result = false
+		sb.WriteString(fmt.Sprintf("Max tries must be > 0: %v\n", p.MaxTries))
+		valid = false
 	}
 
-	return result
+	return valid, sb.String()
+}
+
+func (p Parameters) getVersion() string {
+	info, ok := debug.ReadBuildInfo()
+
+	if !ok {
+		p.Fatalf("Failed to read build info")
+	}
+
+	vcsRevision := "unknown"
+	vcsTime := "unknown"
+
+	for _, setting := range info.Settings {
+		if setting.Key == "vcs.revision" {
+			vcsRevision = setting.Value
+		} else if setting.Key == "vcs.time" {
+			vcsTime = setting.Value
+		}
+	}
+
+	return fmt.Sprintf(
+		"%s (revision %s on %s)",
+		info.Main.Version,
+		vcsRevision,
+		vcsTime,
+	)
 }
 
 func (p Parameters) provided(f *flag.Flag) {
@@ -121,6 +152,8 @@ func Parse(args []string) Parameters {
 	flags.IntVar(&params.MaxTries, "maxTries", 3, "Max tries")
 	flags.DurationVar(&params.Timeout, "timeout", 30*time.Second, "Timeout")
 
+	flags.BoolVar(&params.Version, "version", false, "Display version information")
+
 	// Ignore error as flags is set for ExitOnError
 	_ = flags.Parse(args[1:])
 
@@ -130,9 +163,16 @@ func Parse(args []string) Parameters {
 
 	params = GetConfig(params).Overwrite(params)
 
-	if !params.Valid() {
+	if params.Version {
+		fmt.Println(params.getVersion())
+		os.Exit(0)
+	}
+
+	valid, message := params.Valid()
+
+	if !valid {
 		flags.Usage()
-		params.Fatalf("")
+		params.Fatalf(message)
 	}
 
 	return params

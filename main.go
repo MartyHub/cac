@@ -1,4 +1,4 @@
-package main // import "github.com/MartyHub/cac"
+package main
 
 import (
 	"os"

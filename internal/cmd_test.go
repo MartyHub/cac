@@ -17,9 +17,10 @@ func TestNewParameters(t *testing.T) {
 
 func TestParameters_Valid(t *testing.T) {
 	tests := []struct {
-		name   string
-		params Parameters
-		want   bool
+		name        string
+		params      Parameters
+		wantValid   bool
+		wantMessage string
 	}{
 		{
 			name: "valid",
@@ -34,7 +35,8 @@ func TestParameters_Valid(t *testing.T) {
 				Json:     false,
 				MaxTries: 1,
 			},
-			want: true,
+			wantValid:   true,
+			wantMessage: "",
 		},
 		{
 			name: "certFile",
@@ -47,7 +49,8 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Certificate file is mandatory\n",
 		},
 		{
 			name: "keyFile",
@@ -60,7 +63,8 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Key file is mandatory\n",
 		},
 		{
 			name: "host",
@@ -73,7 +77,8 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Host is mandatory\n",
 		},
 		{
 			name: "appId",
@@ -86,7 +91,8 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Application Id is mandatory\n",
 		},
 		{
 			name: "safe",
@@ -99,7 +105,8 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Safe is mandatory\n",
 		},
 		{
 			name: "objects",
@@ -112,7 +119,8 @@ func TestParameters_Valid(t *testing.T) {
 				Safe:     "safe",
 				MaxTries: 1,
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "At least one object is mandatory\n",
 		},
 		{
 			name: "maxTries",
@@ -125,13 +133,16 @@ func TestParameters_Valid(t *testing.T) {
 				Safe:     "safe",
 				Objects:  []string{"object1"},
 			},
-			want: false,
+			wantValid:   false,
+			wantMessage: "Max tries must be > 0: 0\n",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.params.Valid())
+			valid, message := tt.params.Valid()
+			assert.Equal(t, tt.wantValid, valid)
+			assert.Equal(t, tt.wantMessage, message)
 		})
 	}
 }
@@ -167,4 +178,8 @@ func Test_parse(t *testing.T) {
 	assert.NotContains(t, params.providedFlags, "maxConns")
 	assert.NotContains(t, params.providedFlags, "maxTries")
 	assert.NotContains(t, params.providedFlags, "maxTimeout")
+}
+
+func TestParameters_getVersion(t *testing.T) {
+	assert.Equal(t, " (revision unknown on unknown)", newParameters().getVersion())
 }
