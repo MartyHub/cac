@@ -25,4 +25,6 @@ jobs:
         uses: golangci/golangci-lint-action@v3
 
       - name: Test
-        run: go test -race -short -timeout 30s ./...
+        run: |
+          chmod 600 internal/.config/cac/config.json
+          go test -race -short -timeout 30s ./...

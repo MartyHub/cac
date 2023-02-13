@@ -21,12 +21,12 @@ type Parameters struct {
 	Safe    string
 	Objects []string
 
+	Version bool
+
 	Json     bool
 	MaxConns int
 	MaxTries int
 	Timeout  time.Duration
-
-	Version bool
 
 	log           *log.Logger
 	providedFlags map[string]bool

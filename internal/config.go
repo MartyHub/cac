@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"runtime"
 	"time"
 )
 
@@ -82,8 +83,29 @@ func getConfigFile(params Parameters) string {
 	return path.Join(configHome, "cac", "config.json")
 }
 
+func checkConfigFilePermissions(params Parameters, configFile string) {
+	if runtime.GOOS == "windows" {
+		return
+	}
+
+	if stat, err := os.Stat(configFile); err == nil {
+		permissions := stat.Mode().Perm()
+
+		if permissions != 0o600 && permissions != 0o400 {
+			params.Fatalf(
+				"Incorrect permissions %v for config file %s: only user should have access",
+				permissions,
+				configFile,
+			)
+		}
+	}
+}
+
 func readConfigs(params Parameters) []Config {
 	configFile := getConfigFile(params)
+
+	checkConfigFilePermissions(params, configFile)
+
 	bytes, err := os.ReadFile(configFile)
 
 	var result []Config
@@ -91,9 +113,9 @@ func readConfigs(params Parameters) []Config {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return result
-		} else {
-			params.Fatalf("Failed to read config file %s: %v", configFile, err)
 		}
+
+		params.Fatalf("Failed to read config file %s: %v", configFile, err)
 	}
 
 	if err := json.Unmarshal(bytes, &result); err != nil {
