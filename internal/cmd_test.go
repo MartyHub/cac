@@ -181,5 +181,5 @@ func Test_parse(t *testing.T) {
 }
 
 func TestParameters_getVersion(t *testing.T) {
-	assert.Equal(t, " (revision unknown on unknown)", newParameters().getVersion())
+	assert.Equal(t, "unknown (revision unknown on unknown)", newParameters().getVersion())
 }

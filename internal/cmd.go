@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var Version = "unknown"
+
 type Parameters struct {
 	Config string
 
@@ -110,7 +112,7 @@ func (p Parameters) getVersion() string {
 
 	return fmt.Sprintf(
 		"%s (revision %s on %s)",
-		info.Main.Version,
+		Version,
 		vcsRevision,
 		vcsTime,
 	)

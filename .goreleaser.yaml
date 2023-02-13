@@ -14,6 +14,8 @@ builds:
         goarch: arm64
       - goos: windows
         goarch: arm64
+    ldflags:
+      - "-X github.com/MartyHub/cac/internal.Version={{ .Version }}"
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
