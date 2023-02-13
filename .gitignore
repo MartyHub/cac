@@ -1,5 +1,8 @@
 /.idea/
+/dist/
 /*.iml
 /*.out
 /cac
 /cac.exe
+
+.DS_Store
