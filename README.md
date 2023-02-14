@@ -4,6 +4,8 @@
 simple [CyberArk Central Credentials Provider REST client](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-CP/Latest/en/Content/CCP/Calling-the-Web-Service-using-REST.htm?tocpath=Developer%7CCentral%20Credential%20Provider%7CCall%20the%20Central%20Credential%20Provider%20Web%20Service%20from%20Your%20Application%20Code%7C_____2)
 written in Go.
 
+![build](https://github.com/MartyHub/cac/actions/workflows/go.yml/badge.svg)
+
 ## Authentication
 
 Authentication to CCP is done via client certificate/key files.
