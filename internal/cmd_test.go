@@ -173,6 +173,7 @@ func Test_parse(t *testing.T) {
 	assert.Equal(t, 4, params.MaxConns)
 	assert.Equal(t, 3, params.MaxTries)
 	assert.Equal(t, 30*time.Second, params.Timeout)
+	assert.Equal(t, 100*time.Millisecond, params.Wait)
 
 	assert.NotContains(t, params.providedFlags, "json")
 	assert.NotContains(t, params.providedFlags, "maxConns")

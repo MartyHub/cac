@@ -35,7 +35,7 @@ func (acct *account) newTry() {
 	acct.StatusCode = 0
 }
 
-func (acct *account) run(maxTries int) bool {
+func (acct *account) retry(maxTries int) bool {
 	if acct.Try >= maxTries {
 		return false
 	}

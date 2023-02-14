@@ -134,7 +134,7 @@ func Test_account_parseSuccess(t *testing.T) {
 	}
 }
 
-func Test_account_run(t *testing.T) {
+func Test_account_retry(t *testing.T) {
 	tests := []struct {
 		name string
 		acct *account
@@ -192,7 +192,7 @@ func Test_account_run(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.acct.run(5))
+			assert.Equal(t, tt.want, tt.acct.retry(5))
 		})
 	}
 }

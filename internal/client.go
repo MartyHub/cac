@@ -45,19 +45,32 @@ func NewClient(params Parameters) Client {
 func (c Client) Run() bool {
 	l := c.length()
 	in := make(chan *account, l)
+	retry := make(chan *account, l)
 	out := make(chan *account, l)
 
+	go func() {
+		for acct := range retry {
+			acct := acct
+
+			go func() {
+				time.Sleep(time.Duration(acct.Try*acct.Try) * c.params.Wait)
+				in <- acct
+			}()
+		}
+	}()
+
 	for i := 0; i < c.poolSize(); i++ {
-		go c.worker(in, out)
+		go c.worker(in, retry, out)
 	}
 
 	for _, object := range c.params.Objects {
 		in <- newAccount(object)
 	}
 
-	close(in)
-
 	accounts := c.collect(out)
+
+	close(in)
+	close(retry)
 
 	if c.params.Json {
 		output, err := jsonOutput(accounts)
@@ -115,17 +128,19 @@ func (c Client) ok(accounts []account) bool {
 	return true
 }
 
-func (c Client) worker(in <-chan *account, out chan<- *account) {
+func (c Client) worker(in <-chan *account, retry chan<- *account, out chan<- *account) {
 	for acct := range in {
-		for acct.run(c.params.MaxTries) {
-			// acct.Try is 0 on first step
-			time.Sleep(time.Duration(acct.Try*acct.Try*100) * time.Millisecond)
+		acct.newTry()
 
-			acct.newTry()
-			c.get(acct)
+		c.get(acct)
 
-			if !acct.ok() {
-				c.params.Errorf("Failed to get %v", acct)
+		if !acct.ok() {
+			c.params.Errorf("Failed to get %v", acct)
+
+			if acct.retry(c.params.MaxTries) {
+				retry <- acct
+
+				continue
 			}
 		}
 

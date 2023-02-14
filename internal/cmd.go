@@ -29,6 +29,7 @@ type Parameters struct {
 	MaxConns int
 	MaxTries int
 	Timeout  time.Duration
+	Wait     time.Duration
 
 	log           *log.Logger
 	providedFlags map[string]bool
@@ -153,6 +154,7 @@ func Parse(args []string) Parameters {
 	flags.IntVar(&params.MaxConns, "maxConns", 4, "Max connections")
 	flags.IntVar(&params.MaxTries, "maxTries", 3, "Max tries")
 	flags.DurationVar(&params.Timeout, "timeout", 30*time.Second, "Timeout")
+	flags.DurationVar(&params.Wait, "wait", 100*time.Millisecond, "Wait before retry")
 
 	flags.BoolVar(&params.Version, "version", false, "Display version information")
 

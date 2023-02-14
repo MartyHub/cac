@@ -25,6 +25,7 @@ type Config struct {
 	MaxConns *int           `json:"maxConns"`
 	MaxTries *int           `json:"maxTries"`
 	Timeout  *time.Duration `json:"timeout"`
+	Wait     *time.Duration `json:"wait"`
 }
 
 func (c Config) Overwrite(params Parameters) Parameters {
@@ -62,6 +63,10 @@ func (c Config) Overwrite(params Parameters) Parameters {
 
 	if !params.providedFlags["timeout"] && c.Timeout != nil {
 		params.Timeout = *c.Timeout
+	}
+
+	if !params.providedFlags["wait"] && c.Wait != nil {
+		params.Wait = *c.Wait
 	}
 
 	return params
