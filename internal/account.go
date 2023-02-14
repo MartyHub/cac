@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type successBody struct {
@@ -16,16 +17,19 @@ type errorBody struct {
 }
 
 type account struct {
-	Object     string `json:"object"`
-	Value      string `json:"value"`
-	Try        int    `json:"try"`
-	Error      error  `json:"error,omitempty"`
-	StatusCode int    `json:"statusCode"`
+	Object         string `json:"object"`
+	Value          string `json:"value"`
+	Try            int    `json:"try"`
+	Error          error  `json:"error,omitempty"`
+	StatusCode     int    `json:"statusCode"`
+	prefix, suffix string
 }
 
-func newAccount(object string) *account {
+func newAccount(object string, prefix, suffix string) *account {
 	return &account{
 		Object: object,
+		prefix: prefix,
+		suffix: suffix,
 	}
 }
 
@@ -51,10 +55,6 @@ func (acct *account) ok() bool {
 	return acct.Error == nil && acct.StatusCode == http.StatusOK
 }
 
-func (acct *account) shell() string {
-	return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
-}
-
 func (acct *account) parseError(data []byte) {
 	var result *errorBody
 
@@ -72,6 +72,14 @@ func (acct *account) parseSuccess(data []byte) {
 		acct.Error = fmt.Errorf("failed to parse JSON '%s'", string(data))
 	} else {
 		acct.Value = result.Content
+	}
+}
+
+func (acct *account) shell(fromStdin bool) string {
+	if fromStdin {
+		return strings.Join([]string{acct.prefix, acct.Value, acct.suffix}, "")
+	} else {
+		return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
 	}
 }
 

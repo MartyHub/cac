@@ -2,11 +2,10 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 )
 
-func shellOutput(accounts []account) string {
+func shellOutput(accounts []account, fromStdin bool) string {
 	sb := strings.Builder{}
 
 	for i, acct := range accounts {
@@ -15,7 +14,7 @@ func shellOutput(accounts []account) string {
 				sb.WriteRune('\n')
 			}
 
-			sb.WriteString(fmt.Sprintf("%s='%s'", acct.Object, acct.Value))
+			sb.WriteString(acct.shell(fromStdin))
 		}
 	}
 

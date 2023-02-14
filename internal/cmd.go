@@ -81,7 +81,25 @@ func (p Parameters) Valid() (bool, string) {
 	}
 
 	if len(p.Objects) == 0 {
-		sb.WriteString("At least one object is mandatory\n")
+		if p.MaxConns <= 0 {
+			sb.WriteString("Either one object is required or max conns must be > 0\n")
+			valid = false
+		} else {
+			stat, err := os.Stdin.Stat()
+
+			if err != nil {
+				p.Fatalf("Failed to stat stdin: %v", err)
+			}
+
+			if stat.Mode()&os.ModeCharDevice != 0 {
+				sb.WriteString("Either one object or a pipe is required")
+				valid = false
+			}
+		}
+	}
+
+	if p.MaxConns < 0 {
+		sb.WriteString(fmt.Sprintf("Max conns must be >= 0: %v\n", p.MaxConns))
 		valid = false
 	}
 
@@ -121,6 +139,10 @@ func (p Parameters) getVersion() string {
 
 func (p Parameters) provided(f *flag.Flag) {
 	p.providedFlags[f.Name] = true
+}
+
+func (p Parameters) fromStdin() bool {
+	return len(p.Objects) == 0
 }
 
 type stringsValue []string

@@ -33,5 +33,5 @@ func Test_jsonOutput(t *testing.T) {
 }
 
 func Test_shellOutput(t *testing.T) {
-	assert.Equal(t, "object1='value1'", shellOutput(accounts))
+	assert.Equal(t, "object1='value1'", shellOutput(accounts, false))
 }

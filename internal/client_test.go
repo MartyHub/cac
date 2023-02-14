@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"sync"
 	"testing"
 
@@ -156,16 +157,6 @@ func TestClient_Run_Retry(t *testing.T) {
 	assert.Contains(t, objects, "o2")
 }
 
-func TestClient_length(t *testing.T) {
-	client := &Client{
-		params: Parameters{
-			Objects: []string{"object1", "object2"},
-		},
-	}
-
-	assert.Equal(t, 2, client.length())
-}
-
 func TestClient_poolSize(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -250,5 +241,40 @@ func TestClient_url(t *testing.T) {
 				"Safe":  []string{"safe"},
 			},
 		),
+	)
+}
+
+func TestClient_lineRegex(t *testing.T) {
+	assert.Nil(t, lineRegex.FindStringSubmatch("KEY=VALUE"))
+	assert.Equal(
+		t,
+		[]string{"KEY=${CYBER_ARK:OBJECT}", "KEY=", "OBJECT", ""},
+		lineRegex.FindStringSubmatch("KEY=${CYBER_ARK:OBJECT}"),
+	)
+	assert.Equal(
+		t,
+		[]string{"KEY=PREFIX_${CYBER_ARK:OBJECT}_SUFFIX", "KEY=PREFIX_", "OBJECT", "_SUFFIX"},
+		lineRegex.FindStringSubmatch("KEY=PREFIX_${CYBER_ARK:OBJECT}_SUFFIX"),
+	)
+}
+
+func TestClient_readFromReader(t *testing.T) {
+	client := Client{
+		log: log.New(io.Discard, "", 0),
+	}
+	buf := captureOutput(client)
+	in := make(chan *account, 1)
+
+	assert.Equal(
+		t,
+		1,
+		client.readFromReader(in, strings.NewReader("KEY1=${CYBER_ARK:o1}\nKEY2=VALUE2")),
+	)
+
+	assert.Equal(t, "KEY2=VALUE2\n", buf.String())
+	assert.Equal(
+		t,
+		newAccount("o1", "KEY1=", ""),
+		<-in,
 	)
 }

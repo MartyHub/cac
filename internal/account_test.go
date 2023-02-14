@@ -197,17 +197,12 @@ func Test_account_retry(t *testing.T) {
 	}
 }
 
-func Test_account_shell(t *testing.T) {
-	acct := &account{
-		Object: "object",
-		Value:  "value",
-	}
-
-	assert.Equal(t, "object='value'", acct.shell())
-}
-
 func Test_newAccount(t *testing.T) {
-	assert.Equal(t, &account{Object: "object"}, newAccount("object"))
+	assert.Equal(
+		t,
+		&account{Object: "object", prefix: "", suffix: ""},
+		newAccount("object", "", ""),
+	)
 }
 
 func Test_parseBody(t *testing.T) {
@@ -242,6 +237,45 @@ func Test_parseBody(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.wantErr, parseBody(tt.args.data, tt.args.result) != nil)
+		})
+	}
+}
+
+func Test_account_shell(t *testing.T) {
+	type args struct {
+		fromStdin bool
+	}
+	tests := []struct {
+		name string
+		acct *account
+		args args
+		want string
+	}{
+		{
+			name: "from params",
+			acct: &account{
+				Object: "object",
+				Value:  "value",
+			},
+			args: args{fromStdin: false},
+			want: "object='value'",
+		},
+		{
+			name: "from stdin",
+			acct: &account{
+				Object: "object",
+				Value:  "value",
+				prefix: "prefix_",
+				suffix: "_suffix",
+			},
+			args: args{fromStdin: true},
+			want: "prefix_value_suffix",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.acct.shell(tt.args.fromStdin), "shell(%v)", tt.args.fromStdin)
 		})
 	}
 }

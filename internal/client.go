@@ -1,15 +1,19 @@
 package internal
 
 import (
+	"bufio"
 	"crypto/tls"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"sort"
 	"time"
 )
+
+var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBER_ARK:(.+)}(.*)$`)
 
 type Client struct {
 	http   *http.Client
@@ -43,10 +47,10 @@ func NewClient(params Parameters) Client {
 }
 
 func (c Client) Run() bool {
-	l := c.length()
-	in := make(chan *account, l)
-	retry := make(chan *account, l)
-	out := make(chan *account, l)
+	size := c.poolSize()
+	in := make(chan *account, size)
+	retry := make(chan *account)
+	out := make(chan *account)
 
 	go func() {
 		for acct := range retry {
@@ -59,15 +63,11 @@ func (c Client) Run() bool {
 		}
 	}()
 
-	for i := 0; i < c.poolSize(); i++ {
+	for i := 0; i < size; i++ {
 		go c.worker(in, retry, out)
 	}
 
-	for _, object := range c.params.Objects {
-		in <- newAccount(object)
-	}
-
-	accounts := c.collect(out)
+	accounts := c.collect(out, c.read(in))
 
 	close(in)
 	close(retry)
@@ -81,18 +81,52 @@ func (c Client) Run() bool {
 
 		c.log.Print(output)
 	} else {
-		c.log.Print(shellOutput(accounts))
+		c.log.Print(shellOutput(accounts, c.params.fromStdin()))
 	}
 
 	return c.ok(accounts)
 }
 
-func (c Client) length() int {
-	return len(c.params.Objects)
+func (c Client) read(in chan<- *account) int {
+	if c.params.fromStdin() {
+		return c.readFromReader(in, os.Stdin)
+	}
+
+	return c.readFromParams(in)
+}
+
+func (c Client) readFromParams(in chan<- *account) int {
+	result := 0
+
+	for _, object := range c.params.Objects {
+		in <- newAccount(object, "", "")
+		result++
+	}
+
+	return result
+}
+
+func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
+	scanner := bufio.NewScanner(reader)
+	result := 0
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		groups := lineRegex.FindStringSubmatch(line)
+
+		if len(groups) == 4 {
+			in <- newAccount(groups[2], groups[1], groups[3])
+			result++
+		} else {
+			c.log.Print(line)
+		}
+	}
+
+	return result
 }
 
 func (c Client) poolSize() int {
-	l := c.length()
+	l := len(c.params.Objects)
 
 	if c.params.MaxConns == 0 || l < c.params.MaxConns {
 		return l
@@ -101,11 +135,10 @@ func (c Client) poolSize() int {
 	return c.params.MaxConns
 }
 
-func (c Client) collect(accounts <-chan *account) []account {
-	l := c.length()
-	results := make([]account, 0, l)
+func (c Client) collect(accounts <-chan *account, count int) []account {
+	results := make([]account, 0)
 
-	for i := 0; i < l; i++ {
+	for len(results) < count {
 		acct := <-accounts
 
 		results = append(results, *acct)
