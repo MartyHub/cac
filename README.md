@@ -45,7 +45,7 @@ Usage of ./cac:
 * Multiple objects can be queried in one go: `--object o1 --object o2`
 * Pipe mode:
   ```shell
-  $ echo "KEY=${CYBER_ARK:OBJECT}" | cac -config MyConfig
+  $ echo "KEY=${CYBERARK:OBJECT}" | cac -config MyConfig
   KEY=VALUE
   ```
 * Use `maxConns` to set max parallel HTTP connections to CCP server

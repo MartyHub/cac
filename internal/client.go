@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBER_ARK:(.+)}(.*)$`)
+var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
 type Client struct {
 	http   *http.Client
