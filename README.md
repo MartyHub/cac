@@ -18,7 +18,7 @@ Usage of ./cac:
     	CyberArk Application Id
   -certFile string
     	Certificate file
-  -config string
+  -c string
     	Config name
   -host string
     	CyberArk CCP REST Web Service Host
@@ -30,8 +30,8 @@ Usage of ./cac:
     	Max connections (default 4)
   -maxTries int
     	Max tries (default 3)
-  -object value
-    	CyberArk Object (at least one required)
+  -o value
+    	CyberArk Object
   -safe string
     	CyberArk Safe
   -timeout duration
@@ -42,10 +42,10 @@ Usage of ./cac:
     	Wait before retry (default 100ms)
 ```
 
-* Multiple objects can be queried in one go: `--object o1 --object o2`
+* Multiple objects can be queried in one go: `-o o1 -o o2`
 * Pipe mode:
   ```shell
-  $ echo "KEY=${CYBERARK:OBJECT}" | cac -config MyConfig
+  $ echo "KEY=${CYBERARK:OBJECT}" | cac -c MyConfig
   KEY=VALUE
   ```
 * Use `maxConns` to set max parallel HTTP connections to CCP server

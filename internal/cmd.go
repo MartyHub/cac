@@ -162,7 +162,7 @@ func Parse(args []string) Parameters {
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
 	params := newParameters()
 
-	flags.StringVar(&params.Config, "config", "", "Config name")
+	flags.StringVar(&params.Config, "c", "", "Config name")
 
 	flags.StringVar(&params.CertFile, "certFile", "", "Certificate file")
 	flags.StringVar(&params.KeyFile, "keyFile", "", "Key file")
@@ -170,7 +170,7 @@ func Parse(args []string) Parameters {
 	flags.StringVar(&params.Host, "host", "", "CyberArk CCP REST Web Service Host")
 	flags.StringVar(&params.AppId, "appId", "", "CyberArk Application Id")
 	flags.StringVar(&params.Safe, "safe", "", "CyberArk Safe")
-	flags.Var(&objects, "object", "CyberArk Object (at least one required)")
+	flags.Var(&objects, "o", "CyberArk Object")
 
 	flags.BoolVar(&params.Json, "json", false, "JSON output")
 	flags.IntVar(&params.MaxConns, "maxConns", 4, "Max connections")

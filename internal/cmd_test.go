@@ -186,8 +186,8 @@ func Test_parse(t *testing.T) {
 		"-host", "host",
 		"-appId", "appId",
 		"-safe", "safe",
-		"-object", "o1",
-		"-object", "o2",
+		"-o", "o1",
+		"-o", "o2",
 	}
 
 	params := Parse(args)
