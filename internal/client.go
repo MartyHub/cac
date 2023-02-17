@@ -113,10 +113,12 @@ func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
 }
 
 func (c Client) poolSize() int {
-	l := len(c.params.Objects)
+	if !c.params.fromStdin() {
+		l := len(c.params.Objects)
 
-	if c.params.MaxConns == 0 || l < c.params.MaxConns {
-		return l
+		if c.params.MaxConns == 0 || l < c.params.MaxConns {
+			return l
+		}
 	}
 
 	return c.params.MaxConns

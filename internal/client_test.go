@@ -174,7 +174,7 @@ func TestClient_poolSize(t *testing.T) {
 			want: 2,
 		},
 		{
-			name: "maxConns < length",
+			name: "maxConns > length",
 			client: Client{
 				params: Parameters{
 					MaxConns: 4,
@@ -191,6 +191,15 @@ func TestClient_poolSize(t *testing.T) {
 				},
 			},
 			want: 4,
+		},
+		{
+			name: "stdin",
+			client: Client{
+				params: Parameters{
+					MaxConns: 2,
+				},
+			},
+			want: 2,
 		},
 	}
 
