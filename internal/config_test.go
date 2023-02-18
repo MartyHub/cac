@@ -13,7 +13,7 @@ func toPointer[T any](value T) *T {
 
 func TestConfig_Overwrite(t *testing.T) {
 	config := Config{
-		Name:     "testConfig",
+		Aliases:  []string{"testConfig"},
 		CertFile: "configCertFile",
 		KeyFile:  "configKeyFile",
 		MaxConns: toPointer(8),
@@ -44,7 +44,7 @@ func TestGetConfig(t *testing.T) {
 		Config: "test_config",
 	})
 
-	assert.Equal(t, "test_config", config.Name)
+	assert.Equal(t, []string{"test_config"}, config.Aliases)
 	assert.Equal(t, "localhost", config.Host)
 }
 

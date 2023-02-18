@@ -7,12 +7,14 @@ import (
 	"path"
 	"runtime"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 const xdgConfigHome = "XDG_CONFIG_HOME"
 
 type Config struct {
-	Name string `json:"name"`
+	Aliases []string `json:"aliases"`
 
 	CertFile string `json:"certFile"`
 	KeyFile  string `json:"keyFile"`
@@ -133,7 +135,7 @@ func readConfigs(params Parameters) []Config {
 func GetConfig(params Parameters) Config {
 	if params.Config != "" {
 		for _, conf := range readConfigs(params) {
-			if conf.Name == params.Config {
+			if slices.Contains(conf.Aliases, params.Config) {
 				return conf
 			}
 		}
