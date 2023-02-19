@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"runtime"
 )
 
 const (
-	xdgConfigHome              = "XDG_CONFIG_HOME"
 	configFilePerm fs.FileMode = 0o600
 )
 
@@ -37,20 +35,4 @@ func CheckConfigFilePermissions(configFile string) error {
 	}
 
 	return nil
-}
-
-func GetConfigPath() (string, error) {
-	configHome, found := os.LookupEnv(xdgConfigHome)
-
-	if !found {
-		userHome, err := os.UserHomeDir()
-
-		if err != nil {
-			return "", err
-		}
-
-		configHome = path.Join(userHome, ".config")
-	}
-
-	return path.Join(configHome, "cac"), nil
 }

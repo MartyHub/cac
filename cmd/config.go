@@ -45,13 +45,13 @@ func newConfigListCommand() *cobra.Command {
 }
 
 func runConfigList(cmd *cobra.Command) error {
-	configPath, err := internal.GetConfigPath()
+	configHome, err := internal.GetConfigHome()
 
 	if err != nil {
 		return err
 	}
 
-	entries, err := os.ReadDir(configPath)
+	entries, err := os.ReadDir(configHome)
 
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func newConfigRemoveCommand() *cobra.Command {
 }
 
 func runConfigRemove(config string) error {
-	configPath, err := internal.GetConfigPath()
+	configHome, err := internal.GetConfigHome()
 
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func runConfigRemove(config string) error {
 	count := 0
 
 	for _, ext := range viper.SupportedExts {
-		file := path.Join(configPath, config+"."+ext)
+		file := path.Join(configHome, config+"."+ext)
 		info, err := os.Stat(file)
 
 		if err != nil {
@@ -157,13 +157,13 @@ func runConfigSet(cmd *cobra.Command, params internal.Parameters) error {
 }
 
 func loadConfig(cmd *cobra.Command, config string) (string, error) {
-	configPath, err := internal.GetConfigPath()
+	configHome, err := internal.GetConfigHome()
 
 	if err != nil {
 		return "", err
 	}
 
-	viper.AddConfigPath(configPath)
+	viper.AddConfigPath(configHome)
 	viper.SetConfigName(config)
 	viper.SetConfigPermissions(0o600)
 
@@ -171,17 +171,17 @@ func loadConfig(cmd *cobra.Command, config string) (string, error) {
 	err = viper.ReadInConfig()
 
 	if err != nil {
-		return configPath, err
+		return configHome, err
 	}
 
 	// Then bind flags
 	err = bindConfigFlags(cmd)
 
 	if err != nil {
-		return configPath, err
+		return configHome, err
 	}
 
-	return configPath, internal.CheckConfigFilePermissions(viper.ConfigFileUsed())
+	return configHome, internal.CheckConfigFilePermissions(viper.ConfigFileUsed())
 }
 
 func addConfigFlags(flags *pflag.FlagSet, params *internal.Parameters) {

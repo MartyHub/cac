@@ -6,13 +6,23 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 )
 
-const addr = "127.0.0.1:42000"
+const (
+	addr = "127.0.0.1:42000"
+)
 
 func Start() error {
+	err := writePid()
+
+	if err != nil {
+		return err
+	}
+
 	server := &http.Server{
 		Addr:        addr,
 		IdleTimeout: 30 * time.Second,
@@ -24,13 +34,34 @@ func Start() error {
 
 	_ = server.ListenAndServe()
 
-	err := <-done
+	err = <-done
 
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
 	return nil
+}
+
+func writePid() error {
+	stateHome, err := GetStateHome()
+
+	if err != nil {
+		return err
+	}
+
+	pidFile := filepath.Join(stateHome, "cac.pid")
+	file, err := os.OpenFile(pidFile, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(strconv.Itoa(os.Getpid()))
+
+	return err
 }
 
 func handleSignals(server *http.Server, done chan<- error) {
