@@ -20,7 +20,7 @@ func newTestParameters(t *testing.T, ts *httptest.Server) Parameters {
 	u, err := url.Parse(ts.URL)
 	require.NoError(t, err)
 
-	result := newParameters()
+	result := NewParameters()
 
 	result.AppId = "appId"
 	result.Host = u.Host
@@ -69,7 +69,7 @@ func TestClient_Run(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.True(t, client.Run())
+	assert.NoError(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\no2='value for o2'\n", buf.String())
 }
 
@@ -84,7 +84,7 @@ func TestClient_Run_JSON(t *testing.T) {
 	client.params.Json = true
 	buf := captureOutput(client)
 
-	assert.True(t, client.Run())
+	assert.NoError(t, client.Run())
 	assert.Equal(
 		t,
 		"[\n  {\n    \"object\": \"o1\",\n    \"value\": \"value for o1\",\n    \"try\": 1,\n    \"statusCode\": 200\n  },\n  {\n    \"object\": \"o2\",\n    \"value\": \"value for o2\",\n    \"try\": 1,\n    \"statusCode\": 200\n  }\n]\n",
@@ -107,7 +107,7 @@ func TestClient_Run_BadRequest(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.False(t, client.Run())
+	assert.Error(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\n", buf.String())
 }
 
@@ -126,7 +126,7 @@ func TestClient_Run_InvalidJson(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.False(t, client.Run())
+	assert.Error(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\n", buf.String())
 }
 
@@ -151,7 +151,7 @@ func TestClient_Run_Retry(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.True(t, client.Run())
+	assert.NoError(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\no2='value for o2'\n", buf.String())
 	assert.Contains(t, objects, "o1")
 	assert.Contains(t, objects, "o2")

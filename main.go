@@ -1,13 +1,9 @@
 package main
 
 import (
-	"os"
-
-	"github.com/MartyHub/cac/internal"
+	"github.com/MartyHub/cac/cmd"
 )
 
 func main() {
-	if !internal.NewClient(internal.Parse(os.Args)).Run() {
-		os.Exit(1)
-	}
+	cmd.Execute()
 }

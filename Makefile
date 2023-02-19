@@ -3,7 +3,7 @@
 default: lint test
 
 build:
-	go build -ldflags="-X 'github.com/MartyHub/cac/internal.Version=development'" -race
+	go build -ldflags="-X 'github.com/MartyHub/cac/cmd.Version=development'" -race
 
 lint:
 	$(CURDIR)/bin/lint.sh

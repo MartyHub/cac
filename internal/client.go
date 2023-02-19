@@ -3,6 +3,7 @@ package internal
 import (
 	"bufio"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -46,7 +47,7 @@ func NewClient(params Parameters) Client {
 	}
 }
 
-func (c Client) Run() bool {
+func (c Client) Run() error {
 	size := c.poolSize()
 	in := make(chan *account, size)
 	out := make(chan *account)
@@ -140,14 +141,20 @@ func (c Client) collect(accounts <-chan *account, count int) []account {
 	return results
 }
 
-func (c Client) ok(accounts []account) bool {
+func (c Client) ok(accounts []account) error {
+	errCount := 0
+
 	for _, acct := range accounts {
 		if !acct.ok() {
-			return false
+			errCount++
 		}
 	}
 
-	return true
+	if errCount > 0 {
+		return fmt.Errorf("%d error(s) / %d object(s)", errCount, len(accounts))
+	}
+
+	return nil
 }
 
 func (c Client) worker(in chan *account, out chan<- *account) {
