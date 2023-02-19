@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -20,6 +21,7 @@ func newConfigCommand() *cobra.Command {
 
 	result.AddCommand(
 		newConfigListCommand(),
+		newConfigRemoveCommand(),
 	)
 
 	return result
@@ -27,8 +29,9 @@ func newConfigCommand() *cobra.Command {
 
 func newConfigListCommand() *cobra.Command {
 	result := &cobra.Command{
-		Use:   "list",
-		Short: "List configurations",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List configurations",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runConfigList(cmd)
 		},
@@ -62,6 +65,56 @@ func runConfigList(cmd *cobra.Command) error {
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+func newConfigRemoveCommand() *cobra.Command {
+	result := &cobra.Command{
+		Use:     "remove <config>",
+		Aliases: []string{"rm"},
+		Args:    cobra.ExactArgs(1),
+		Short:   "Remove a configuration",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runConfigRemove(args[0])
+		},
+	}
+
+	return result
+}
+
+func runConfigRemove(config string) error {
+	configPath, err := internal.GetConfigPath()
+
+	if err != nil {
+		return err
+	}
+
+	count := 0
+
+	for _, ext := range viper.SupportedExts {
+		file := path.Join(configPath, config+"."+ext)
+		info, err := os.Stat(file)
+
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			} else {
+				return err
+			}
+		}
+
+		if !info.IsDir() {
+			if err = os.Remove(file); err != nil {
+				return err
+			}
+			count++
+		}
+	}
+
+	if count == 0 {
+		return fmt.Errorf("failed to find config %s", config)
 	}
 
 	return nil
