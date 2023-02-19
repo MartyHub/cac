@@ -45,8 +45,33 @@ func Start() error {
 	return nil
 }
 
+func GetPid() (int, error) {
+	stateHome, err := GetStateHome()
+
+	if err != nil {
+		return 0, err
+	}
+
+	pidFile := filepath.Join(stateHome, "cac.pid")
+	file, err := os.Open(pidFile)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return strconv.Atoi(string(bytes))
+}
+
 func Stop() error {
-	pid, err := readPid()
+	pid, err := GetPid()
 
 	if err != nil {
 		return err
@@ -84,31 +109,6 @@ func writePid() (string, error) {
 	_, err = file.WriteString(strconv.Itoa(os.Getpid()))
 
 	return pidFile, err
-}
-
-func readPid() (int, error) {
-	stateHome, err := GetStateHome()
-
-	if err != nil {
-		return 0, err
-	}
-
-	pidFile := filepath.Join(stateHome, "cac.pid")
-	file, err := os.Open(pidFile)
-
-	if err != nil {
-		return 0, err
-	}
-
-	defer file.Close()
-
-	bytes, err := io.ReadAll(file)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return strconv.Atoi(string(bytes))
 }
 
 func handleSignals(server *http.Server, done chan<- error) {
