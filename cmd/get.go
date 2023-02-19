@@ -67,7 +67,9 @@ func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error
 	params.Objects = args
 
 	if params.Config != "" {
-		loadConfig(params.Config)
+		if err := loadConfig(params.Config); err != nil {
+			return err
+		}
 
 		params.CertFile = viper.GetString(certFileName)
 		params.KeyFile = viper.GetString(keyFileName)
@@ -90,16 +92,22 @@ func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error
 	return internal.NewClient(params).Run()
 }
 
-func loadConfig(config string) {
+func loadConfig(config string) error {
 	configPath, err := internal.GetConfigPath()
 
-	cobra.CheckErr(err)
+	if err != nil {
+		return err
+	}
 
 	viper.AddConfigPath(configPath)
 	viper.SetConfigName(config)
 	viper.SetConfigPermissions(0o600)
 
-	cobra.CheckErr(viper.ReadInConfig())
-	cobra.CheckErr(internal.CheckConfigFilePermissions(viper.ConfigFileUsed()))
+	err = viper.ReadInConfig()
 
+	if err != nil {
+		return err
+	}
+
+	return internal.CheckConfigFilePermissions(viper.ConfigFileUsed())
 }
