@@ -1,6 +1,8 @@
 .PHONY: lint, test
 
-default: lint test
+default: all
+
+all: lint test build
 
 build:
 	go build -ldflags="-X 'github.com/MartyHub/cac/cmd.Version=development'" -race

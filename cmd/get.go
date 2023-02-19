@@ -22,9 +22,10 @@ const (
 func newGetCommand() *cobra.Command {
 	params := internal.NewParameters()
 	result := &cobra.Command{
-		Use:   "get <object>...",
-		Short: "Get objects from CyberArk",
-		Args:  cobra.ArbitraryArgs,
+		Use:     "get <object>...",
+		Aliases: []string{"g"},
+		Args:    cobra.ArbitraryArgs,
+		Short:   "Get objects from CyberArk",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGet(cmd, args, params)
 		},
