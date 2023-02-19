@@ -8,12 +8,13 @@ import (
 func newProxyCommand() *cobra.Command {
 	flags := &cobra.Command{
 		Use:     "proxy",
-		Aliases: []string{"d"},
+		Aliases: []string{"p"},
 		Short:   "Manage HTTP proxy server",
 	}
 
 	flags.AddCommand(
 		newProxyStartCommand(),
+		newProxyStopCommand(),
 	)
 
 	return flags
@@ -34,4 +35,20 @@ func newProxyStartCommand() *cobra.Command {
 
 func runProxyStart(cmd *cobra.Command) error {
 	return internal.Start()
+}
+
+func newProxyStopCommand() *cobra.Command {
+	flags := &cobra.Command{
+		Use:   "stop",
+		Short: "Stop HTTP proxy server",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runProxyStop(cmd)
+		},
+	}
+
+	return flags
+}
+
+func runProxyStop(cmd *cobra.Command) error {
+	return internal.Stop()
 }

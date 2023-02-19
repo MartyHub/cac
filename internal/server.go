@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +18,7 @@ const (
 )
 
 func Start() error {
-	err := writePid()
+	pidFile, err := writePid()
 
 	if err != nil {
 		return err
@@ -33,6 +34,7 @@ func Start() error {
 	go handleSignals(server, done)
 
 	_ = server.ListenAndServe()
+	_ = os.Remove(pidFile)
 
 	err = <-done
 
@@ -43,25 +45,70 @@ func Start() error {
 	return nil
 }
 
-func writePid() error {
-	stateHome, err := GetStateHome()
+func Stop() error {
+	pid, err := readPid()
 
 	if err != nil {
 		return err
+	}
+
+	p, err := os.FindProcess(pid)
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = p.Release()
+	}()
+
+	return p.Signal(syscall.SIGTERM)
+}
+
+func writePid() (string, error) {
+	stateHome, err := GetStateHome()
+
+	if err != nil {
+		return "", err
 	}
 
 	pidFile := filepath.Join(stateHome, "cac.pid")
 	file, err := os.OpenFile(pidFile, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer file.Close()
 
 	_, err = file.WriteString(strconv.Itoa(os.Getpid()))
 
-	return err
+	return pidFile, err
+}
+
+func readPid() (int, error) {
+	stateHome, err := GetStateHome()
+
+	if err != nil {
+		return 0, err
+	}
+
+	pidFile := filepath.Join(stateHome, "cac.pid")
+	file, err := os.Open(pidFile)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return strconv.Atoi(string(bytes))
 }
 
 func handleSignals(server *http.Server, done chan<- error) {
