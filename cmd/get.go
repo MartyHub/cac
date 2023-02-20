@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/MartyHub/cac/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -61,6 +63,18 @@ func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error
 	}
 
 	if err := params.Validate(); err != nil {
+		return err
+	}
+
+	_, err := internal.GetPid()
+
+	if os.IsNotExist(err) {
+		if err = internal.Fork(); err != nil {
+			return err
+		}
+	}
+
+	if err != nil {
 		return err
 	}
 

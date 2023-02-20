@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strconv"
@@ -16,6 +17,20 @@ import (
 const (
 	addr = "127.0.0.1:42000"
 )
+
+func Fork() error {
+	p := exec.Command(os.Args[0], "proxy", "start")
+
+	if err := p.Start(); err != nil {
+		return err
+	}
+
+	if err := p.Process.Release(); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func Start() error {
 	pidFile, err := writePid()
