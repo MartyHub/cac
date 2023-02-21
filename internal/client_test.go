@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -41,11 +42,20 @@ func newTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	return result
 }
 
+var now = time.Unix(1677008748, 0).UTC()
+
+func newFixedClock() fixedClock {
+	return fixedClock{
+		t: now,
+	}
+}
+
 func newTestClient(t *testing.T, handler http.HandlerFunc) Client {
 	ts := newTestServer(t, handler)
 
 	return Client{
 		cache:  &cache{},
+		clock:  newFixedClock(),
 		http:   ts.Client(),
 		log:    log.New(io.Discard, "", 0),
 		params: newTestParameters(t, ts),
@@ -88,7 +98,7 @@ func TestClient_Run_JSON(t *testing.T) {
 	assert.NoError(t, client.Run())
 	assert.Equal(
 		t,
-		"[\n  {\n    \"object\": \"o1\",\n    \"value\": \"value for o1\",\n    \"try\": 1,\n    \"statusCode\": 200\n  },\n  {\n    \"object\": \"o2\",\n    \"value\": \"value for o2\",\n    \"try\": 1,\n    \"statusCode\": 200\n  }\n]\n",
+		"[\n  {\n    \"object\": \"o1\",\n    \"value\": \"value for o1\",\n    \"try\": 1,\n    \"statusCode\": 200,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  },\n  {\n    \"object\": \"o2\",\n    \"value\": \"value for o2\",\n    \"try\": 1,\n    \"statusCode\": 200,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  }\n]\n",
 		buf.String(),
 	)
 }
@@ -270,7 +280,8 @@ func TestClient_lineRegex(t *testing.T) {
 
 func TestClient_readFromReader(t *testing.T) {
 	client := Client{
-		log: log.New(io.Discard, "", 0),
+		clock: newFixedClock(),
+		log:   log.New(io.Discard, "", 0),
 	}
 	buf := captureOutput(client)
 	in := make(chan *account, 1)
@@ -282,9 +293,8 @@ func TestClient_readFromReader(t *testing.T) {
 	)
 
 	assert.Equal(t, "KEY2=VALUE2\n", buf.String())
-	assert.Equal(
-		t,
-		newAccount("o1", "KEY1=", ""),
-		<-in,
-	)
+	result := <-in
+	assert.Equal(t, "o1", result.Object)
+	assert.Equal(t, "KEY1=", result.prefix)
+	assert.Equal(t, "", result.suffix)
 }

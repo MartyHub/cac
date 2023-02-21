@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type successBody struct {
@@ -17,19 +18,21 @@ type errorBody struct {
 }
 
 type account struct {
-	Object         string `json:"object"`
-	Value          string `json:"value"`
-	Try            int    `json:"try"`
-	Error          error  `json:"error,omitempty"`
-	StatusCode     int    `json:"statusCode"`
+	Object         string    `json:"object"`
+	Value          string    `json:"value"`
+	Try            int       `json:"try"`
+	Error          error     `json:"error,omitempty"`
+	StatusCode     int       `json:"statusCode"`
+	Timestamp      time.Time `json:"timestamp"`
 	prefix, suffix string
 }
 
-func newAccount(object string, prefix, suffix string) *account {
+func newAccount(object string, now time.Time, prefix, suffix string) *account {
 	return &account{
-		Object: object,
-		prefix: prefix,
-		suffix: suffix,
+		Object:    object,
+		Timestamp: now,
+		prefix:    prefix,
+		suffix:    suffix,
 	}
 }
 

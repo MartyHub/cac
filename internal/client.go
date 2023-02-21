@@ -17,6 +17,7 @@ import (
 var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
 type Client struct {
+	clock  clock
 	cache  *cache
 	http   *http.Client
 	log    *log.Logger // help testing
@@ -38,6 +39,7 @@ func NewClient(params Parameters) (Client, error) {
 
 	return Client{
 		cache: cache,
+		clock: utcClock{},
 		http: &http.Client{
 			Timeout: params.Timeout,
 			Transport: &http.Transport{
@@ -104,7 +106,7 @@ func (c Client) readFromParams(in chan<- *account) int {
 	result := 0
 
 	for _, object := range c.params.Objects {
-		in <- newAccount(object, "", "")
+		in <- newAccount(object, c.clock.now(), "", "")
 		result++
 	}
 
@@ -120,7 +122,7 @@ func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
 		groups := lineRegex.FindStringSubmatch(line)
 
 		if len(groups) == 4 {
-			in <- newAccount(groups[2], groups[1], groups[3])
+			in <- newAccount(groups[2], c.clock.now(), groups[1], groups[3])
 			result++
 		} else {
 			c.log.Print(line)

@@ -200,8 +200,8 @@ func Test_account_retry(t *testing.T) {
 func Test_newAccount(t *testing.T) {
 	assert.Equal(
 		t,
-		&account{Object: "object", prefix: "", suffix: ""},
-		newAccount("object", "", ""),
+		&account{Object: "object", Timestamp: now, prefix: "", suffix: ""},
+		newAccount("object", now, "", ""),
 	)
 }
 
