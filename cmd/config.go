@@ -177,11 +177,7 @@ func loadConfig(cmd *cobra.Command, config string) (string, error) {
 	// Then bind flags
 	err = bindConfigFlags(cmd)
 
-	if err != nil {
-		return configHome, err
-	}
-
-	return configHome, internal.CheckConfigFilePermissions(viper.ConfigFileUsed())
+	return configHome, err
 }
 
 func addConfigFlags(flags *pflag.FlagSet, params *internal.Parameters) {

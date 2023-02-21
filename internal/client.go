@@ -17,19 +17,27 @@ import (
 var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
 type Client struct {
+	cache  *cache
 	http   *http.Client
 	log    *log.Logger // help testing
 	params Parameters
 }
 
-func NewClient(params Parameters) Client {
+func NewClient(params Parameters) (Client, error) {
 	cert, err := tls.LoadX509KeyPair(params.CertFile, params.KeyFile)
 
 	if err != nil {
-		params.Fatalf("Failed to read certificate %s and key %s: %v", params.CertFile, params.KeyFile, err)
+		return Client{}, err
+	}
+
+	cache, err := newCache(params.Config)
+
+	if err != nil {
+		return Client{}, err
 	}
 
 	return Client{
+		cache: cache,
 		http: &http.Client{
 			Timeout: params.Timeout,
 			Transport: &http.Transport{
@@ -44,7 +52,7 @@ func NewClient(params Parameters) Client {
 		},
 		log:    log.New(os.Stdout, "", 0),
 		params: params,
-	}
+	}, nil
 }
 
 func (c Client) Run() error {
@@ -70,6 +78,15 @@ func (c Client) Run() error {
 		c.log.Print(output)
 	} else {
 		c.log.Print(shellOutput(accounts, c.params.fromStdin()))
+	}
+
+	if c.cache.exists() {
+		c.cache.merge(accounts)
+		err := c.cache.save()
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return c.ok(accounts)
@@ -159,6 +176,11 @@ func (c Client) ok(accounts []account) error {
 
 func (c Client) worker(in chan *account, out chan<- *account) {
 	for acct := range in {
+		if acct, found := c.cache.get(acct.Object); found {
+			out <- &acct
+			continue
+		}
+
 		acct.newTry()
 
 		c.get(acct)

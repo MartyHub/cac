@@ -45,6 +45,7 @@ func newTestClient(t *testing.T, handler http.HandlerFunc) Client {
 	ts := newTestServer(t, handler)
 
 	return Client{
+		cache:  &cache{},
 		http:   ts.Client(),
 		log:    log.New(io.Discard, "", 0),
 		params: newTestParameters(t, ts),
