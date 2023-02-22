@@ -8,4 +8,4 @@ if [[ ! -z "$@" ]]; then
   test="-run $@"
 fi
 
-gotest -coverprofile coverage.out -race -timeout 30s -v ${test}
+gotest -coverprofile coverage.out -race -timeout 30s ${test}

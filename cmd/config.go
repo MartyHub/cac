@@ -147,7 +147,7 @@ func runConfigSet(cmd *cobra.Command, params internal.Parameters) error {
 
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return viper.WriteConfigAs(path.Join(configPath, params.Config+".properties"))
+			viper.SetConfigFile(path.Join(configPath, params.Config+".properties"))
 		} else {
 			return err
 		}
@@ -167,15 +167,13 @@ func loadConfig(cmd *cobra.Command, config string) (string, error) {
 	viper.SetConfigName(config)
 	viper.SetConfigPermissions(0o600)
 
-	// First read config
-	err = viper.ReadInConfig()
+	err = bindConfigFlags(cmd)
 
 	if err != nil {
 		return configHome, err
 	}
 
-	// Then bind flags
-	err = bindConfigFlags(cmd)
+	err = viper.ReadInConfig()
 
 	return configHome, err
 }
