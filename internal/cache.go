@@ -105,7 +105,7 @@ func (c *cache) save() error {
 		return nil
 	}
 
-	bytes, err := json.Marshal(c.accts)
+	bytes, err := json.MarshalIndent(c.accts, "", "  ")
 
 	if err != nil {
 		return err
