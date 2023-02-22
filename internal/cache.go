@@ -117,7 +117,7 @@ func (c *cache) save() error {
 		return err
 	}
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, cacheFilePerm)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, cacheFilePerm)
 
 	if err != nil {
 		return err
