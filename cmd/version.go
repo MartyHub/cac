@@ -16,8 +16,8 @@ func newVersionCommand() *cobra.Command {
 		Use:     "version",
 		Aliases: []string{"v"},
 		Short:   "Display version information",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runVersion(cmd, full)
+		Run: func(cmd *cobra.Command, args []string) {
+			runVersion(cmd, full)
 		},
 	}
 
@@ -26,20 +26,12 @@ func newVersionCommand() *cobra.Command {
 	return result
 }
 
-func runVersion(cmd *cobra.Command, full bool) error {
-	var err error
-
+func runVersion(cmd *cobra.Command, full bool) {
 	if full {
-		_, err = cmd.OutOrStdout().Write([]byte(getFullVersion()))
+		cmd.Println(getFullVersion())
 	} else {
-		_, err = cmd.OutOrStdout().Write([]byte(getVersion()))
+		cmd.Println(Version)
 	}
-
-	return err
-}
-
-func getVersion() string {
-	return Version + "\n"
 }
 
 func getFullVersion() string {
@@ -58,7 +50,7 @@ func getFullVersion() string {
 	}
 
 	return fmt.Sprintf(
-		"%s (revision %s on %s)\n",
+		"%s (revision %s on %s)",
 		Version,
 		vcsRevision,
 		vcsTime,

@@ -62,11 +62,7 @@ func runConfigList(cmd *cobra.Command) error {
 			ext := filepath.Ext(entry.Name())
 
 			if slices.Contains(viper.SupportedExts, ext[1:]) {
-				if _, err = cmd.OutOrStdout().Write(
-					[]byte(fmt.Sprintln(strings.TrimSuffix(entry.Name(), ext))),
-				); err != nil {
-					return err
-				}
+				cmd.Println(strings.TrimSuffix(entry.Name(), ext))
 			}
 		}
 	}

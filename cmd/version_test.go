@@ -6,10 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_getVersion(t *testing.T) {
-	assert.Equal(t, "unknown\n", getVersion())
-}
-
 func Test_getFullVersion(t *testing.T) {
-	assert.Equal(t, "unknown (revision unknown on unknown)\n", getFullVersion())
+	assert.Equal(t, "unknown (revision unknown on unknown)", getFullVersion())
 }
