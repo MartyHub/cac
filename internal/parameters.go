@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/spf13/pflag"
 )
 
 type Parameters struct {
@@ -91,7 +93,8 @@ func (p Parameters) Validate() error {
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf("%s", strings.Join(errors, "\n"))
+		p.Errorf(strings.Join(errors, "\n"))
+		return pflag.ErrHelp
 	}
 
 	return nil

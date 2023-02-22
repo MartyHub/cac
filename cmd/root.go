@@ -14,8 +14,9 @@ func Execute() {
 
 func newRootCommand() *cobra.Command {
 	result := &cobra.Command{
-		Use:   "cac",
-		Short: "Simple CyberArk Central Credentials Provider REST client",
+		Use:          "cac",
+		Short:        "Simple CyberArk Central Credentials Provider REST client",
+		SilenceUsage: true,
 	}
 
 	result.AddCommand(

@@ -1,11 +1,11 @@
 package internal
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
 
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,9 +17,9 @@ func TestNewParameters(t *testing.T) {
 
 func TestParameters_Valid(t *testing.T) {
 	tests := []struct {
-		name   string
-		params Parameters
-		want   error
+		name    string
+		params  Parameters
+		wantErr bool
 	}{
 		{
 			name: "valid",
@@ -46,7 +46,7 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Certificate file is mandatory"),
+			wantErr: true,
 		},
 		{
 			name: "keyFile",
@@ -59,7 +59,7 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Key file is mandatory"),
+			wantErr: true,
 		},
 		{
 			name: "host",
@@ -72,7 +72,7 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Host is mandatory"),
+			wantErr: true,
 		},
 		{
 			name: "appId",
@@ -85,7 +85,7 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Application Id is mandatory"),
+			wantErr: true,
 		},
 		{
 			name: "safe",
@@ -98,7 +98,7 @@ func TestParameters_Valid(t *testing.T) {
 				Objects:  []string{"object1"},
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Safe is mandatory"),
+			wantErr: true,
 		},
 		{
 			name: "objects",
@@ -112,7 +112,7 @@ func TestParameters_Valid(t *testing.T) {
 				MaxConns: 0,
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Either one object is required or max connections must be > 0"),
+			wantErr: true,
 		},
 		{
 			name: "maxConns",
@@ -127,7 +127,7 @@ func TestParameters_Valid(t *testing.T) {
 				MaxTries: 1,
 				Objects:  []string{"object1"},
 			},
-			want: fmt.Errorf("Max connections must be >= 0: -1"),
+			wantErr: true,
 		},
 		{
 			name: "maxConns without object",
@@ -140,7 +140,7 @@ func TestParameters_Valid(t *testing.T) {
 				Safe:     "safe",
 				MaxTries: 1,
 			},
-			want: fmt.Errorf("Either one object is required or max connections must be > 0"),
+			wantErr: true,
 		},
 		{
 			name: "maxTries",
@@ -153,14 +153,19 @@ func TestParameters_Valid(t *testing.T) {
 				Safe:     "safe",
 				Objects:  []string{"object1"},
 			},
-			want: fmt.Errorf("Max tries must be > 0: 0"),
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.params.Validate()
-			assert.Equal(t, tt.want, err)
+
+			if tt.wantErr {
+				assert.ErrorIs(t, err, pflag.ErrHelp)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
