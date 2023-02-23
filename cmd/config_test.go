@@ -26,6 +26,6 @@ func Test_runConfigList(t *testing.T) {
 	buf := &bytes.Buffer{}
 	cmd.SetOut(buf)
 
-	assert.NoError(t, runConfigList(cmd))
+	assert.NoError(t, runConfigList(cmd, false))
 	assert.Equal(t, "json_config\nyaml_config\n", buf.String())
 }

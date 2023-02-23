@@ -16,35 +16,38 @@ import (
 )
 
 func newConfigCommand() *cobra.Command {
-	flags := &cobra.Command{
+	result := &cobra.Command{
 		Use:     "config",
 		Aliases: []string{"c"},
 		Short:   "Manage configurations",
 	}
 
-	flags.AddCommand(
+	result.AddCommand(
 		newConfigListCommand(),
 		newConfigRemoveCommand(),
 		newConfigSetCommand(),
 	)
 
-	return flags
+	return result
 }
 
 func newConfigListCommand() *cobra.Command {
-	flags := &cobra.Command{
+	verbose := false
+	result := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List configurations",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigList(cmd)
+			return runConfigList(cmd, verbose)
 		},
 	}
 
-	return flags
+	result.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
+
+	return result
 }
 
-func runConfigList(cmd *cobra.Command) error {
+func runConfigList(cmd *cobra.Command, verbose bool) error {
 	configHome, err := internal.GetConfigHome()
 
 	if err != nil {
@@ -63,6 +66,12 @@ func runConfigList(cmd *cobra.Command) error {
 
 			if slices.Contains(viper.SupportedExts, ext[1:]) {
 				cmd.Println(strings.TrimSuffix(entry.Name(), ext))
+
+				if verbose {
+					if err = printConfig(cmd, filepath.Join(configHome, entry.Name())); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -70,8 +79,33 @@ func runConfigList(cmd *cobra.Command) error {
 	return nil
 }
 
+func printConfig(cmd *cobra.Command, file string) error {
+	viper.SetConfigFile(file)
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	for _, name := range []string{
+		appIdName,
+		certFileName,
+		hostName,
+		jsonName,
+		keyFileName,
+		maxConnectionsName,
+		maxTriesName,
+		safeName,
+		timeoutName,
+		waitName,
+	} {
+		cmd.Println("  ", fmt.Sprintf("%-15s", name), "=", viper.Get(name))
+	}
+
+	return nil
+}
+
 func newConfigRemoveCommand() *cobra.Command {
-	flags := &cobra.Command{
+	result := &cobra.Command{
 		Use:     "remove <config>",
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
@@ -81,7 +115,7 @@ func newConfigRemoveCommand() *cobra.Command {
 		},
 	}
 
-	return flags
+	return result
 }
 
 func runConfigRemove(config string) error {
