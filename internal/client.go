@@ -18,7 +18,7 @@ var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
 type Client struct {
 	clock  clock
-	cache  *cache
+	cache  *Cache
 	http   *http.Client
 	log    *log.Logger // help testing
 	params Parameters
@@ -31,7 +31,7 @@ func NewClient(params Parameters) (Client, error) {
 		return Client{}, err
 	}
 
-	cache, err := newCache(params.Config)
+	cache, err := NewCache(params.Config)
 
 	if err != nil {
 		return Client{}, err

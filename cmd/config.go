@@ -18,7 +18,6 @@ import (
 func newConfigCommand() *cobra.Command {
 	result := &cobra.Command{
 		Use:     "config",
-		Aliases: []string{"c"},
 		Short:   "Manage configurations",
 	}
 

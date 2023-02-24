@@ -20,6 +20,7 @@ func newRootCommand() *cobra.Command {
 	}
 
 	result.AddCommand(
+		newCacheCommand(),
 		newConfigCommand(),
 		newGetCommand(),
 		newVersionCommand(),

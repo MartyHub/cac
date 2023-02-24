@@ -54,7 +54,7 @@ func newTestClient(t *testing.T, handler http.HandlerFunc) Client {
 	ts := newTestServer(t, handler)
 
 	return Client{
-		cache:  &cache{},
+		cache:  &Cache{},
 		clock:  newFixedClock(),
 		http:   ts.Client(),
 		log:    log.New(io.Discard, "", 0),

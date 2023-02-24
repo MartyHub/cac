@@ -13,14 +13,14 @@ const (
 	cacheFilePerm fs.FileMode = 0o600
 )
 
-type cache struct {
-	config string
-	accts  []account
+type Cache struct {
+	Config   string
+	Accounts []account
 }
 
-func newCache(config string) (*cache, error) {
-	result := &cache{
-		config: config,
+func NewCache(config string) (*Cache, error) {
+	result := &Cache{
+		Config: config,
 	}
 
 	if !result.exists() {
@@ -49,22 +49,22 @@ func newCache(config string) (*cache, error) {
 		return nil, err
 	}
 
-	if err = json.Unmarshal(bytes, &result.accts); err != nil {
+	if err = json.Unmarshal(bytes, &result.Accounts); err != nil {
 		return nil, err
 	}
 
 	return result, nil
 }
 
-func (c *cache) exists() bool {
-	return c.config != ""
+func (c *Cache) exists() bool {
+	return c.Config != ""
 }
 
-func (c *cache) fileName() string {
-	return c.config + ".json"
+func (c *Cache) fileName() string {
+	return c.Config + ".json"
 }
 
-func (c *cache) filePath() (string, error) {
+func (c *Cache) filePath() (string, error) {
 	home, err := GetStateHome()
 
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *cache) filePath() (string, error) {
 	return path.Join(home, c.fileName()), nil
 }
 
-func (c *cache) checkPermissions(file string) error {
+func (c *Cache) checkPermissions(file string) error {
 	if runtime.GOOS != "windows" {
 		stat, err := os.Stat(file)
 
@@ -100,12 +100,12 @@ func (c *cache) checkPermissions(file string) error {
 	return nil
 }
 
-func (c *cache) save() error {
+func (c *Cache) save() error {
 	if !c.exists() {
 		return nil
 	}
 
-	bytes, err := json.MarshalIndent(c.accts, "", "  ")
+	bytes, err := json.MarshalIndent(c.Accounts, "", "  ")
 
 	if err != nil {
 		return err
@@ -130,8 +130,8 @@ func (c *cache) save() error {
 	return err
 }
 
-func (c *cache) get(object string) (account, bool) {
-	for _, acct := range c.accts {
+func (c *Cache) get(object string) (account, bool) {
+	for _, acct := range c.Accounts {
 		if acct.Object == object {
 			return acct, true
 		}
@@ -142,19 +142,19 @@ func (c *cache) get(object string) (account, bool) {
 	}, false
 }
 
-func (c *cache) set(acct account) {
-	for i := range c.accts {
-		if c.accts[i].Object == acct.Object {
-			c.accts[i] = acct
+func (c *Cache) set(acct account) {
+	for i := range c.Accounts {
+		if c.Accounts[i].Object == acct.Object {
+			c.Accounts[i] = acct
 
 			return
 		}
 	}
 
-	c.accts = append(c.accts, acct)
+	c.Accounts = append(c.Accounts, acct)
 }
 
-func (c *cache) merge(accts []account) {
+func (c *Cache) merge(accts []account) {
 	for _, acct := range accts {
 		if acct.ok() {
 			c.set(acct)
