@@ -119,7 +119,23 @@ func Test_account_parseSuccess(t *testing.T) {
 			name: "ok",
 			acct: &account{},
 			args: args{
-				data: []byte("{\"Content\": \"value\"}"),
+				data: []byte(`{"Content": "value"}`),
+			},
+			wantValue: "value",
+		},
+		{
+			name: "single quote",
+			acct: &account{},
+			args: args{
+				data: []byte(`{"Content": "'value'"}`),
+			},
+			wantValue: "value",
+		},
+		{
+			name: "double quote",
+			acct: &account{},
+			args: args{
+				data: []byte(`{"Content": "\"value\""}`),
 			},
 			wantValue: "value",
 		},

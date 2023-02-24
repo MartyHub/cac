@@ -74,7 +74,7 @@ func (acct *account) parseSuccess(data []byte) {
 	if err := parseBody(data, &result); err != nil {
 		acct.Error = fmt.Errorf("failed to parse JSON '%s'", string(data))
 	} else {
-		acct.Value = result.Content
+		acct.Value = strings.Trim(result.Content, "'\"")
 	}
 }
 
