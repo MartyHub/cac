@@ -10,7 +10,6 @@ import (
 
 	"github.com/MartyHub/cac/internal"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
@@ -47,30 +46,17 @@ func newConfigListCommand() *cobra.Command {
 }
 
 func runConfigList(cmd *cobra.Command, verbose bool) error {
-	configHome, err := internal.GetConfigHome()
-
+	configInfos, err := getConfigInfos()
 	if err != nil {
 		return err
 	}
 
-	entries, err := os.ReadDir(configHome)
+	for _, configInfo := range configInfos {
+		cmd.Println(configInfo.name)
 
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			ext := filepath.Ext(entry.Name())
-
-			if slices.Contains(viper.SupportedExts, ext[1:]) {
-				cmd.Println(strings.TrimSuffix(entry.Name(), ext))
-
-				if verbose {
-					if err = printConfig(cmd, filepath.Join(configHome, entry.Name())); err != nil {
-						return err
-					}
-				}
+		if verbose {
+			if err = printConfig(cmd, configInfo.file); err != nil {
+				return err
 			}
 		}
 	}
@@ -113,6 +99,7 @@ func newConfigRemoveCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runConfigRemove(args[0])
 		},
+		ValidArgsFunction: completeConfig,
 	}
 
 	return result
@@ -165,9 +152,10 @@ func newConfigSetCommand() *cobra.Command {
 
 			return runConfigSet(cmd, params)
 		},
+		ValidArgsFunction: completeConfig,
 	}
 
-	addConfigFlags(result.Flags(), &params)
+	addConfigFlags(result, &params)
 	result.Flags().DurationVar(&params.Expiry, expiryName, 12*time.Hour, "Cache expiry")
 
 	return result
@@ -209,19 +197,27 @@ func loadConfig(cmd *cobra.Command, config string) (string, error) {
 	return configHome, err
 }
 
-func addConfigFlags(flags *pflag.FlagSet, params *internal.Parameters) {
-	flags.StringVar(&params.CertFile, certFileName, "", "Certificate file")
-	flags.StringVar(&params.KeyFile, keyFileName, "", "Key file")
+func addConfigFlags(cmd *cobra.Command, params *internal.Parameters) {
+	cmd.Flags().StringVar(&params.CertFile, certFileName, "", "Certificate file")
+	_ = cmd.MarkFlagFilename(certFileName, "cer", "cert", "crt", "pem")
 
-	flags.StringVar(&params.Host, hostName, "", "CyberArk CCP REST Web Service Host")
-	flags.StringVar(&params.AppId, appIdName, "", "CyberArk Application Id")
-	flags.StringVar(&params.Safe, safeName, "", "CyberArk Safe")
+	cmd.Flags().StringVar(&params.KeyFile, keyFileName, "", "Key file")
+	_ = cmd.MarkFlagFilename(certFileName, "cer", "cert", "crt", "key", "pem")
 
-	flags.BoolVar(&params.Json, jsonName, false, "JSON output")
-	flags.IntVar(&params.MaxConns, maxConnectionsName, 4, "Max connections")
-	flags.IntVar(&params.MaxTries, maxTriesName, 3, "Max tries")
-	flags.DurationVar(&params.Timeout, timeoutName, 30*time.Second, "Timeout")
-	flags.DurationVar(&params.Wait, waitName, 100*time.Millisecond, "Wait before retry")
+	cmd.Flags().StringVar(&params.Host, hostName, "", "CyberArk CCP REST Web Service Host")
+	_ = cmd.RegisterFlagCompletionFunc(hostName, cobra.NoFileCompletions)
+
+	cmd.Flags().StringVar(&params.AppId, appIdName, "", "CyberArk Application Id")
+	_ = cmd.RegisterFlagCompletionFunc(appIdName, cobra.NoFileCompletions)
+
+	cmd.Flags().StringVar(&params.Safe, safeName, "", "CyberArk Safe")
+	_ = cmd.RegisterFlagCompletionFunc(safeName, cobra.NoFileCompletions)
+
+	cmd.Flags().BoolVar(&params.Json, jsonName, false, "JSON output")
+	cmd.Flags().IntVar(&params.MaxConns, maxConnectionsName, 4, "Max connections")
+	cmd.Flags().IntVar(&params.MaxTries, maxTriesName, 3, "Max tries")
+	cmd.Flags().DurationVar(&params.Timeout, timeoutName, 30*time.Second, "Timeout")
+	cmd.Flags().DurationVar(&params.Wait, waitName, 100*time.Millisecond, "Wait before retry")
 }
 
 func bindConfigFlags(cmd *cobra.Command) error {
@@ -246,4 +242,69 @@ func bindConfigFlags(cmd *cobra.Command) error {
 	}
 
 	return nil
+}
+
+func completeConfig(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	result, err := getConfigs(toComplete)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	return result, cobra.ShellCompDirectiveNoFileComp
+}
+
+type configInfo struct {
+	name, file string
+}
+
+func getConfigInfos() ([]configInfo, error) {
+	configHome, err := internal.GetConfigHome()
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := os.ReadDir(configHome)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []configInfo
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			ext := filepath.Ext(entry.Name())
+
+			if slices.Contains(viper.SupportedExts, ext[1:]) {
+				config := strings.TrimSuffix(entry.Name(), ext)
+
+				result = append(result, configInfo{
+					name: config,
+					file: filepath.Join(configHome, entry.Name()),
+				})
+			}
+		}
+	}
+
+	return result, nil
+}
+
+func getConfigs(prefix string) ([]string, error) {
+	configInfos, err := getConfigInfos()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+
+	for _, configInfo := range configInfos {
+		if strings.HasPrefix(configInfo.name, prefix) {
+			result = append(result, configInfo.name)
+		}
+	}
+
+	return result, nil
 }

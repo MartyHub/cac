@@ -6,8 +6,10 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -18,6 +20,36 @@ const (
 type Cache struct {
 	Accounts map[string]account
 	Config   string
+}
+
+func GetCaches(prefix string) ([]string, error) {
+	stateHome, err := GetStateHome()
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := os.ReadDir(stateHome)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			ext := filepath.Ext(entry.Name())
+
+			if ext == ".json" {
+				config := strings.TrimSuffix(entry.Name(), ext)
+
+				if strings.HasPrefix(config, prefix) {
+					result = append(result, config)
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func NewCache(config string) (*Cache, error) {

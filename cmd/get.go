@@ -30,11 +30,24 @@ func newGetCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGet(cmd, args, params)
 		},
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	result.Flags().StringVarP(&params.Config, "config", "c", "", "Config name")
+	_ = result.RegisterFlagCompletionFunc("config", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) != 0 {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
 
-	addConfigFlags(result.Flags(), &params)
+		result, err := getConfigs(toComplete)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+
+		return result, cobra.ShellCompDirectiveNoFileComp
+	})
+
+	addConfigFlags(result, &params)
 
 	return result
 }

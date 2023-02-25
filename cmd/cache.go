@@ -1,10 +1,6 @@
 package cmd
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/MartyHub/cac/internal"
 	"github.com/spf13/cobra"
 )
@@ -40,31 +36,17 @@ func newCacheListCommand() *cobra.Command {
 }
 
 func runCacheList(cmd *cobra.Command, verbose bool) error {
-	stateHome, err := internal.GetStateHome()
-
+	caches, err := internal.GetCaches("")
 	if err != nil {
 		return err
 	}
 
-	entries, err := os.ReadDir(stateHome)
+	for _, cache := range caches {
+		cmd.Println(cache)
 
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			ext := filepath.Ext(entry.Name())
-
-			if ext == ".json" {
-				config := strings.TrimSuffix(entry.Name(), ext)
-				cmd.Println(config)
-
-				if verbose {
-					if err = printCache(cmd, config); err != nil {
-						return err
-					}
-				}
+		if verbose {
+			if err = printCache(cmd, cache); err != nil {
+				return err
 			}
 		}
 	}
@@ -93,6 +75,18 @@ func newCacheRemoveCommand() *cobra.Command {
 		Short:   "Remove a cache",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCacheRemove(args[0])
+		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			result, err := internal.GetCaches(toComplete)
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveError
+			}
+
+			return result, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 
