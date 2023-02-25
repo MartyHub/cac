@@ -29,3 +29,40 @@ func Test_runConfigList(t *testing.T) {
 	assert.NoError(t, runConfigList(cmd, false))
 	assert.Equal(t, "json_config\nyaml_config\n", buf.String())
 }
+
+func Test_loadConfigAlias(t *testing.T) {
+	type args struct {
+		configHome string
+		alias      string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "unknown alias",
+			args: args{
+				configHome: "../.config/cac",
+				alias:      "unknown",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid alias",
+			args: args{
+				configHome: "../.config/cac",
+				alias:      "a1",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := loadConfigAlias(tt.args.configHome, tt.args.alias); (err != nil) != tt.wantErr {
+				t.Errorf("loadConfigAlias() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

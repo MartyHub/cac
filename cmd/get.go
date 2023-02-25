@@ -3,21 +3,6 @@ package cmd
 import (
 	"github.com/MartyHub/cac/internal"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
-
-const (
-	certFileName       = "cert-file"
-	keyFileName        = "key-file"
-	hostName           = "host"
-	appIdName          = "app-id"
-	safeName           = "safe"
-	jsonName           = "json"
-	maxConnectionsName = "max-connections"
-	maxTriesName       = "max-tries"
-	expiryName         = "expiry"
-	timeoutName        = "timeout"
-	waitName           = "wait"
 )
 
 func newGetCommand() *cobra.Command {
@@ -35,10 +20,6 @@ func newGetCommand() *cobra.Command {
 
 	result.Flags().StringVarP(&params.Config, "config", "c", "", "Config name")
 	_ = result.RegisterFlagCompletionFunc("config", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) != 0 {
-			return nil, cobra.ShellCompDirectiveNoFileComp
-		}
-
 		result, err := getConfigs(toComplete)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveError
@@ -53,17 +34,12 @@ func newGetCommand() *cobra.Command {
 }
 
 func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error {
-	params.Objects = args
-
-	if params.Config != "" {
-		if _, err := loadConfig(cmd, params.Config); err != nil {
-			return err
-		}
-
-		if err := viper.Unmarshal(&params); err != nil {
-			return err
-		}
+	params, err := applyConfig(cmd, params)
+	if err != nil {
+		return err
 	}
+
+	params.Objects = args
 
 	if err := params.Validate(); err != nil {
 		return err

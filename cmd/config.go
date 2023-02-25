@@ -14,6 +14,21 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const (
+	aliasesName        = "aliases"
+	appIdName          = "app-id"
+	certFileName       = "cert-file"
+	expiryName         = "expiry"
+	hostName           = "host"
+	jsonName           = "json"
+	keyFileName        = "key-file"
+	maxConnectionsName = "max-connections"
+	maxTriesName       = "max-tries"
+	safeName           = "safe"
+	timeoutName        = "timeout"
+	waitName           = "wait"
+)
+
 func newConfigCommand() *cobra.Command {
 	result := &cobra.Command{
 		Use:   "config",
@@ -72,6 +87,7 @@ func printConfig(cmd *cobra.Command, file string) error {
 	}
 
 	for _, name := range []string{
+		aliasesName,
 		appIdName,
 		certFileName,
 		expiryName,
@@ -148,31 +164,76 @@ func newConfigSetCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Add or update a configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params.Config = args[0]
-
-			return runConfigSet(cmd, params)
+			return runConfigSet(cmd, args[0], params.Aliases)
 		},
 		ValidArgsFunction: completeConfig,
 	}
 
 	addConfigFlags(result, &params)
+
+	result.Flags().StringSliceVar(&params.Aliases, aliasesName, []string{}, "Aliases")
+	_ = result.RegisterFlagCompletionFunc(aliasesName, cobra.NoFileCompletions)
+
 	result.Flags().DurationVar(&params.Expiry, expiryName, 12*time.Hour, "Cache expiry")
 
 	return result
 }
 
-func runConfigSet(cmd *cobra.Command, params internal.Parameters) error {
-	configPath, err := loadConfig(cmd, params.Config)
+func runConfigSet(cmd *cobra.Command, config string, aliases []string) error {
+	configPath, err := loadConfig(cmd, config)
 
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			viper.SetConfigFile(path.Join(configPath, params.Config+".properties"))
+			viper.SetConfigFile(path.Join(configPath, config+".yaml"))
 		} else {
 			return err
 		}
 	}
 
 	return viper.WriteConfig()
+}
+
+func applyConfig(cmd *cobra.Command, params internal.Parameters) (internal.Parameters, error) {
+	if params.Config == "" {
+		return params, nil
+	}
+
+	configHome, err := loadConfig(cmd, params.Config)
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		err = loadConfigAlias(configHome, params.Config)
+	}
+	if err != nil {
+		return params, err
+	}
+
+	err = viper.Unmarshal(&params)
+
+	return params, err
+}
+
+func loadConfigAlias(configHome string, alias string) error {
+	entries, err := os.ReadDir(configHome)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			ext := filepath.Ext(entry.Name())
+
+			if slices.Contains(viper.SupportedExts, ext[1:]) {
+				viper.SetConfigFile(filepath.Join(configHome, entry.Name()))
+
+				if err = viper.ReadInConfig(); err == nil {
+					if slices.Contains(viper.GetStringSlice(aliasesName), alias) {
+						return nil
+					}
+				}
+			}
+		}
+	}
+
+	return fmt.Errorf("failed to find config with alias %s", alias)
 }
 
 func loadConfig(cmd *cobra.Command, config string) (string, error) {
@@ -186,8 +247,7 @@ func loadConfig(cmd *cobra.Command, config string) (string, error) {
 	viper.SetConfigName(config)
 	viper.SetConfigPermissions(0o600)
 
-	err = bindConfigFlags(cmd)
-
+	err = viper.BindPFlags(cmd.Flags())
 	if err != nil {
 		return configHome, err
 	}
@@ -218,30 +278,6 @@ func addConfigFlags(cmd *cobra.Command, params *internal.Parameters) {
 	cmd.Flags().IntVar(&params.MaxTries, maxTriesName, 3, "Max tries")
 	cmd.Flags().DurationVar(&params.Timeout, timeoutName, 30*time.Second, "Timeout")
 	cmd.Flags().DurationVar(&params.Wait, waitName, 100*time.Millisecond, "Wait before retry")
-}
-
-func bindConfigFlags(cmd *cobra.Command) error {
-	for _, name := range []string{
-		certFileName,
-		keyFileName,
-		hostName,
-		appIdName,
-		safeName,
-		jsonName,
-		maxConnectionsName,
-		maxTriesName,
-		expiryName,
-		timeoutName,
-		waitName,
-	} {
-		if flag := cmd.Flags().Lookup(name); flag != nil {
-			if err := viper.BindPFlag(name, flag); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 func completeConfig(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

@@ -11,7 +11,8 @@ import (
 )
 
 type Parameters struct {
-	Config string
+	Aliases []string
+	Config  string
 
 	CertFile string `mapstructure:"cert-file"`
 	KeyFile  string `mapstructure:"key-file"`
