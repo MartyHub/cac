@@ -13,17 +13,18 @@ import (
 type Parameters struct {
 	Config string
 
-	CertFile string
-	KeyFile  string
+	CertFile string `mapstructure:"cert-file"`
+	KeyFile  string `mapstructure:"key-file"`
 
 	Host    string
-	AppId   string
+	AppId   string `mapstructure:"app-id"`
 	Safe    string
 	Objects []string
 
 	Json     bool
-	MaxConns int
-	MaxTries int
+	MaxConns int `mapstructure:"max-connections"`
+	MaxTries int `mapstructure:"max-tries"`
+	Expiry   time.Duration
 	Timeout  time.Duration
 	Wait     time.Duration
 

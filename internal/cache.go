@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sort"
+	"time"
 )
 
 const (
@@ -14,13 +16,14 @@ const (
 )
 
 type Cache struct {
+	Accounts map[string]account
 	Config   string
-	Accounts []account
 }
 
 func NewCache(config string) (*Cache, error) {
 	result := &Cache{
-		Config: config,
+		Accounts: make(map[string]account),
+		Config:   config,
 	}
 
 	if !result.exists() {
@@ -54,6 +57,42 @@ func NewCache(config string) (*Cache, error) {
 	}
 
 	return result, nil
+}
+
+func (c *Cache) clean(clock clock, expiry time.Duration) {
+	now := clock.now()
+
+	for _, acct := range c.Accounts {
+		if !now.After(acct.Timestamp.Add(expiry)) {
+			delete(c.Accounts, acct.Object)
+		}
+	}
+}
+
+func (c *Cache) Len() int {
+	return len(c.Accounts)
+}
+
+func (c *Cache) Remove() error {
+	file, err := c.filePath()
+
+	if err != nil {
+		return err
+	}
+
+	return os.Remove(file)
+}
+
+func (c *Cache) SortedObjects() []string {
+	result := make([]string, 0, c.Len())
+
+	for k := range c.Accounts {
+		result = append(result, k)
+	}
+
+	sort.Strings(result)
+
+	return result
 }
 
 func (c *Cache) exists() bool {
@@ -130,34 +169,10 @@ func (c *Cache) save() error {
 	return err
 }
 
-func (c *Cache) get(object string) (account, bool) {
-	for _, acct := range c.Accounts {
-		if acct.Object == object {
-			return acct, true
-		}
-	}
-
-	return account{
-		Object: object,
-	}, false
-}
-
-func (c *Cache) set(acct account) {
-	for i := range c.Accounts {
-		if c.Accounts[i].Object == acct.Object {
-			c.Accounts[i] = acct
-
-			return
-		}
-	}
-
-	c.Accounts = append(c.Accounts, acct)
-}
-
 func (c *Cache) merge(accts []account) {
 	for _, acct := range accts {
 		if acct.ok() {
-			c.set(acct)
+			c.Accounts[acct.Object] = acct
 		}
 	}
 }

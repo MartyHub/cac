@@ -32,14 +32,17 @@ func NewClient(params Parameters) (Client, error) {
 	}
 
 	cache, err := NewCache(params.Config)
-
 	if err != nil {
 		return Client{}, err
 	}
 
+	clock := utcClock{}
+
+	cache.clean(clock, params.Expiry)
+
 	return Client{
 		cache: cache,
-		clock: utcClock{},
+		clock: clock,
 		http: &http.Client{
 			Timeout: params.Timeout,
 			Transport: &http.Transport{
@@ -178,7 +181,7 @@ func (c Client) ok(accounts []account) error {
 
 func (c Client) worker(in chan *account, out chan<- *account) {
 	for acct := range in {
-		if acct, found := c.cache.get(acct.Object); found {
+		if acct, found := c.cache.Accounts[acct.Object]; found {
 			out <- &acct
 			continue
 		}

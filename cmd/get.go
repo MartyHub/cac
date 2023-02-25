@@ -15,6 +15,7 @@ const (
 	jsonName           = "json"
 	maxConnectionsName = "max-connections"
 	maxTriesName       = "max-tries"
+	expiryName         = "expiry"
 	timeoutName        = "timeout"
 	waitName           = "wait"
 )
@@ -46,18 +47,9 @@ func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error
 			return err
 		}
 
-		params.CertFile = viper.GetString(certFileName)
-		params.KeyFile = viper.GetString(keyFileName)
-
-		params.AppId = viper.GetString(appIdName)
-		params.Host = viper.GetString(hostName)
-		params.Safe = viper.GetString(safeName)
-
-		params.Json = viper.GetBool(jsonName)
-		params.MaxConns = viper.GetInt(maxConnectionsName)
-		params.MaxTries = viper.GetInt(maxTriesName)
-		params.Timeout = viper.GetDuration(timeoutName)
-		params.Wait = viper.GetDuration(waitName)
+		if err := viper.Unmarshal(&params); err != nil {
+			return err
+		}
 	}
 
 	if err := params.Validate(); err != nil {

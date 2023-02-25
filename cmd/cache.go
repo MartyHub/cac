@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"os"
-	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/MartyHub/cac/internal"
@@ -80,16 +78,8 @@ func printCache(cmd *cobra.Command, config string) error {
 		return err
 	}
 
-	if len(cache.Accounts) == 0 {
-		return nil
-	}
-
-	sort.Slice(cache.Accounts, func(i, j int) bool {
-		return cache.Accounts[i].Object < cache.Accounts[j].Object
-	})
-
-	for _, acct := range cache.Accounts {
-		cmd.Println("  ", acct.Object, "=", acct.Value)
+	for _, object := range cache.SortedObjects() {
+		cmd.Println("  ", object, "=", cache.Accounts[object].Value)
 	}
 
 	return nil
@@ -110,13 +100,10 @@ func newCacheRemoveCommand() *cobra.Command {
 }
 
 func runCacheRemove(config string) error {
-	stateHome, err := internal.GetStateHome()
-
+	cache, err := internal.NewCache(config)
 	if err != nil {
 		return err
 	}
 
-	file := path.Join(stateHome, config+".json")
-
-	return os.Remove(file)
+	return cache.Remove()
 }

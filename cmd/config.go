@@ -17,8 +17,8 @@ import (
 
 func newConfigCommand() *cobra.Command {
 	result := &cobra.Command{
-		Use:     "config",
-		Short:   "Manage configurations",
+		Use:   "config",
+		Short: "Manage configurations",
 	}
 
 	result.AddCommand(
@@ -88,6 +88,7 @@ func printConfig(cmd *cobra.Command, file string) error {
 	for _, name := range []string{
 		appIdName,
 		certFileName,
+		expiryName,
 		hostName,
 		jsonName,
 		keyFileName,
@@ -167,6 +168,7 @@ func newConfigSetCommand() *cobra.Command {
 	}
 
 	addConfigFlags(result.Flags(), &params)
+	result.Flags().DurationVar(&params.Expiry, expiryName, 12*time.Hour, "Cache expiry")
 
 	return result
 }
@@ -232,11 +234,14 @@ func bindConfigFlags(cmd *cobra.Command) error {
 		jsonName,
 		maxConnectionsName,
 		maxTriesName,
+		expiryName,
 		timeoutName,
 		waitName,
 	} {
-		if err := viper.BindPFlag(name, cmd.Flags().Lookup(name)); err != nil {
-			return err
+		if flag := cmd.Flags().Lookup(name); flag != nil {
+			if err := viper.BindPFlag(name, flag); err != nil {
+				return err
+			}
 		}
 	}
 
