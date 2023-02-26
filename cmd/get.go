@@ -11,7 +11,7 @@ func newGetCommand() *cobra.Command {
 		Use:     "get <object>...",
 		Aliases: []string{"g"},
 		Args:    cobra.ArbitraryArgs,
-		Short:   "Get objects from CyberArk",
+		Short:   "Get accounts from CyberArk",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGet(cmd, args, params)
 		},

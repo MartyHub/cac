@@ -174,7 +174,7 @@ func (c Client) ok(accounts []account) error {
 	}
 
 	if errCount > 0 {
-		return fmt.Errorf("%d error(s) / %d object(s)", errCount, len(accounts))
+		return fmt.Errorf("%d error(s) / %d account(s)", errCount, len(accounts))
 	}
 
 	return nil

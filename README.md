@@ -29,7 +29,7 @@ Flags:
       --wait duration         Wait before retry (default 100ms)
 ```
 
-* Multiple objects can be queried in one go
+* Multiple accounts can be queried in one go
 * Pipe mode:
   ```shell
   $ echo "KEY=${CYBERARK:OBJECT}" | cac get -c MyConfig
