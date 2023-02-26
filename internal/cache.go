@@ -95,7 +95,7 @@ func (c *Cache) clean(clock clock, expiry time.Duration) {
 	now := clock.now()
 
 	for _, acct := range c.Accounts {
-		if !now.After(acct.Timestamp.Add(expiry)) {
+		if !now.Before(acct.Timestamp.Add(expiry)) {
 			delete(c.Accounts, acct.Object)
 		}
 	}

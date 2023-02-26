@@ -34,7 +34,7 @@ func TestCache_clean(t *testing.T) {
 			Object:     "o1",
 			Value:      "value1",
 			StatusCode: 200,
-			Timestamp:  now.Add(-3 * time.Hour),
+			Timestamp:  now.Add(-1 * time.Hour),
 		},
 		{
 			Object:     "o2",
@@ -46,7 +46,7 @@ func TestCache_clean(t *testing.T) {
 			Object:     "o3",
 			Value:      "value3",
 			StatusCode: 200,
-			Timestamp:  now.Add(-1 * time.Hour),
+			Timestamp:  now.Add(-3 * time.Hour),
 		},
 	})
 	assert.Equal(t, 3, c.Len())
