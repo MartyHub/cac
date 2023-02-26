@@ -1,0 +1,23 @@
+{
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i).+_multiline"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "jsonBody": {
+            "Content": "{{regexExtract request.query.Object '(?i)(.+)_multiline' 'parts'}}Multiline Value\nof\n{{parts.0}}"
+        },
+        "status": 200
+    }
+}

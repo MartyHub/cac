@@ -1,4 +1,4 @@
-.PHONY: lint, test
+.PHONY: lint mock test
 
 default: all
 
@@ -9,6 +9,18 @@ build:
 
 lint:
 	$(CURDIR)/bin/lint.sh
+
+mock:
+	podman run -it --rm \
+	--name    wiremock \
+	--publish 8443:8443 \
+	--volume  $(PWD)/wiremock:/home/wiremock:ro \
+	wiremock/wiremock:2.35.0 \
+	--disable-banner \
+	--disable-http \
+	--global-response-templating \
+	--https-port 8443 \
+	--verbose
 
 test:
 	$(CURDIR)/bin/test.sh $(test)

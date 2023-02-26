@@ -2,6 +2,7 @@
 /.vscode/
 /dist/
 /*.iml
+/*.pem
 /*.out
 /cac
 /cac.exe

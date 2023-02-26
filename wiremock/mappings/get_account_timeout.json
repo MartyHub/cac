@@ -1,0 +1,24 @@
+{
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i)timeout"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "fixedDelayMilliseconds": 5000,
+        "jsonBody": {
+            "Content": "Value of {{request.query.Object}}"
+        },
+        "status": 200
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i)(unknown|not[_-]?found)"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "jsonBody": {
+            "ErrorCode": "000-404",
+            "ErrorMsg": "Account {{request.query.Object}} not found"
+        },
+        "status": 404
+    }
+}

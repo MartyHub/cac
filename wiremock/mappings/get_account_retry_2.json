@@ -1,0 +1,25 @@
+{
+    "scenarioName": "Retry",
+    "requiredScenarioState": "Retry",
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i)retry"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "jsonBody": {
+            "Content": "Value of {{request.query.Object}}"
+        },
+        "status": 200
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "scenarioName": "Retry",
+    "requiredScenarioState": "Started",
+    "newScenarioState": "Retry",
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i)retry"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "status": 503
+    }
+}

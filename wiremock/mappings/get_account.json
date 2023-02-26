@@ -1,0 +1,23 @@
+{
+    "request": {
+        "method": "GET",
+        "queryParameters": {
+            "AppID": {
+                "matches": ".+"
+            },
+            "Object": {
+                "matches": "(?i).+"
+            },
+            "Safe": {
+                "matches": ".+"
+            }
+        },
+        "urlPath": "/AIMWebService/api/Accounts"
+    },
+    "response": {
+        "jsonBody": {
+            "Content": "Value of {{request.query.Object}}"
+        },
+        "status": 200
+    }
+}
