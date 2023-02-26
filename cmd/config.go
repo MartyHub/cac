@@ -25,6 +25,7 @@ const (
 	maxConnectionsName = "max-connections"
 	maxTriesName       = "max-tries"
 	safeName           = "safe"
+	skipVerifyName     = "skip-verify"
 	timeoutName        = "timeout"
 	waitName           = "wait"
 )
@@ -97,6 +98,7 @@ func printConfig(cmd *cobra.Command, file string) error {
 		maxConnectionsName,
 		maxTriesName,
 		safeName,
+		skipVerifyName,
 		timeoutName,
 		waitName,
 	} {
@@ -274,6 +276,7 @@ func addConfigFlags(cmd *cobra.Command, params *internal.Parameters) {
 	_ = cmd.RegisterFlagCompletionFunc(safeName, cobra.NoFileCompletions)
 
 	cmd.Flags().BoolVar(&params.Json, jsonName, false, "JSON output")
+	cmd.Flags().BoolVar(&params.SkipVerify, skipVerifyName, false, "Skip server certificate verification")
 	cmd.Flags().IntVar(&params.MaxConns, maxConnectionsName, 4, "Max connections")
 	cmd.Flags().IntVar(&params.MaxTries, maxTriesName, 3, "Max tries")
 	cmd.Flags().DurationVar(&params.Timeout, timeoutName, 30*time.Second, "Timeout")

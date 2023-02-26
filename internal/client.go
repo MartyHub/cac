@@ -49,9 +49,10 @@ func NewClient(params Parameters) (Client, error) {
 				MaxConnsPerHost: params.MaxConns,
 				Proxy:           nil,
 				TLSClientConfig: &tls.Config{
-					Certificates:  []tls.Certificate{cert},
-					MinVersion:    tls.VersionTLS12,
-					Renegotiation: tls.RenegotiateOnceAsClient,
+					Certificates:       []tls.Certificate{cert},
+					MinVersion:         tls.VersionTLS12,
+					Renegotiation:      tls.RenegotiateOnceAsClient,
+					InsecureSkipVerify: params.SkipVerify,
 				},
 			},
 		},
