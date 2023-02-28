@@ -18,19 +18,20 @@ type errorBody struct {
 }
 
 type account struct {
-	Object         string    `json:"object"`
-	Value          string    `json:"value"`
-	Try            int       `json:"try"`
-	Error          error     `json:"error,omitempty"`
-	StatusCode     int       `json:"statusCode"`
-	Timestamp      time.Time `json:"timestamp"`
-	prefix, suffix string
+	Object              string    `json:"object"`
+	Value               string    `json:"value"`
+	Try                 int       `json:"try"`
+	Error               error     `json:"error,omitempty"`
+	StatusCode          int       `json:"statusCode"`
+	Timestamp           time.Time `json:"timestamp"`
+	key, prefix, suffix string
 }
 
-func newAccount(object string, now time.Time, prefix, suffix string) *account {
+func newAccount(object string, now time.Time, key, prefix, suffix string) *account {
 	return &account{
 		Object:    object,
 		Timestamp: now,
+		key:       key,
 		prefix:    prefix,
 		suffix:    suffix,
 	}
@@ -80,7 +81,7 @@ func (acct *account) parseSuccess(data []byte) {
 
 func (acct *account) shell(fromStdin bool) string {
 	if fromStdin {
-		return strings.Join([]string{acct.prefix, acct.Value, acct.suffix}, "")
+		return strings.Join([]string{acct.key, "=", acct.prefix, acct.Value, acct.suffix}, "")
 	} else {
 		return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
 	}

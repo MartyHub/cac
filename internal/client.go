@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-var lineRegex = regexp.MustCompile(`^(.*)\$\{CYBERARK:(.+)}(.*)$`)
+var lineRegex = regexp.MustCompile(`^([^#][^=]*)=(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
 type Client struct {
 	clock  clock
@@ -110,7 +110,7 @@ func (c Client) readFromParams(in chan<- *account) int {
 	result := 0
 
 	for _, object := range c.params.Objects {
-		in <- newAccount(object, c.clock.now(), "", "")
+		in <- newAccount(object, c.clock.now(), "", "", "")
 		result++
 	}
 
@@ -125,8 +125,8 @@ func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
 		line := scanner.Text()
 		groups := lineRegex.FindStringSubmatch(line)
 
-		if len(groups) == 4 {
-			in <- newAccount(groups[2], c.clock.now(), groups[1], groups[3])
+		if len(groups) == 5 {
+			in <- newAccount(groups[3], c.clock.now(), groups[1], groups[2], groups[4])
 			result++
 		} else {
 			c.log.Print(line)

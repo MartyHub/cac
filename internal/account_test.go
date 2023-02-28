@@ -217,7 +217,7 @@ func Test_newAccount(t *testing.T) {
 	assert.Equal(
 		t,
 		&account{Object: "object", Timestamp: now, prefix: "", suffix: ""},
-		newAccount("object", now, "", ""),
+		newAccount("object", now, "", "", ""),
 	)
 }
 
@@ -281,11 +281,12 @@ func Test_account_shell(t *testing.T) {
 			acct: &account{
 				Object: "object",
 				Value:  "value",
+				key:    "key",
 				prefix: "prefix_",
 				suffix: "_suffix",
 			},
 			args: args{fromStdin: true},
-			want: "prefix_value_suffix",
+			want: "key=prefix_value_suffix",
 		},
 	}
 

@@ -268,12 +268,12 @@ func TestClient_lineRegex(t *testing.T) {
 	assert.Nil(t, lineRegex.FindStringSubmatch("KEY=VALUE"))
 	assert.Equal(
 		t,
-		[]string{"KEY=${CYBERARK:OBJECT}", "KEY=", "OBJECT", ""},
+		[]string{"KEY=${CYBERARK:OBJECT}", "KEY", "", "OBJECT", ""},
 		lineRegex.FindStringSubmatch("KEY=${CYBERARK:OBJECT}"),
 	)
 	assert.Equal(
 		t,
-		[]string{"KEY=PREFIX_${CYBERARK:OBJECT}_SUFFIX", "KEY=PREFIX_", "OBJECT", "_SUFFIX"},
+		[]string{"KEY=PREFIX_${CYBERARK:OBJECT}_SUFFIX", "KEY", "PREFIX_", "OBJECT", "_SUFFIX"},
 		lineRegex.FindStringSubmatch("KEY=PREFIX_${CYBERARK:OBJECT}_SUFFIX"),
 	)
 }
@@ -295,6 +295,7 @@ func TestClient_readFromReader(t *testing.T) {
 	assert.Equal(t, "KEY2=VALUE2\n", buf.String())
 	result := <-in
 	assert.Equal(t, "o1", result.Object)
-	assert.Equal(t, "KEY1=", result.prefix)
+	assert.Equal(t, "KEY1", result.key)
+	assert.Equal(t, "", result.prefix)
 	assert.Equal(t, "", result.suffix)
 }
