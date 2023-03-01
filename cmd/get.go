@@ -27,6 +27,7 @@ func newGetCommand() *cobra.Command {
 
 		return result, cobra.ShellCompDirectiveNoFileComp
 	})
+	result.Flags().StringVarP(&params.Output, "output", "o", "", "Generate files in given output path")
 
 	addConfigFlags(result, &params)
 

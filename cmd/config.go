@@ -24,6 +24,7 @@ const (
 	keyFileName        = "key-file"
 	maxConnectionsName = "max-connections"
 	maxTriesName       = "max-tries"
+	outputName         = "output"
 	safeName           = "safe"
 	skipVerifyName     = "skip-verify"
 	timeoutName        = "timeout"

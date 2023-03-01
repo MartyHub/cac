@@ -74,28 +74,38 @@ func (c Client) Run() error {
 
 	close(in)
 
-	if c.params.Json {
-		output, err := jsonOutput(accounts)
-
-		if err != nil {
-			c.params.Fatalf("Failed to marshall result as JSON: %v", err)
-		}
-
-		c.log.Print(output)
-	} else {
-		c.log.Print(shellOutput(accounts, c.params.fromStdin()))
+	err := c.output(accounts)
+	if err != nil {
+		return err
 	}
 
 	if c.cache.exists() {
 		c.cache.merge(accounts)
 		err := c.cache.save()
-
 		if err != nil {
 			return err
 		}
 	}
 
 	return c.ok(accounts)
+}
+
+func (c Client) output(accounts []account) error {
+	if c.params.Json {
+		output, err := jsonOutput(accounts)
+
+		if err != nil {
+			return err
+		}
+
+		c.log.Print(output)
+	} else if c.params.Output != "" {
+		return fileOutput(accounts, c.params.Output)
+	} else {
+		c.log.Print(shellOutput(accounts, c.params.fromStdin()))
+	}
+
+	return nil
 }
 
 func (c Client) read(in chan<- *account) int {
@@ -107,10 +117,11 @@ func (c Client) read(in chan<- *account) int {
 }
 
 func (c Client) readFromParams(in chan<- *account) int {
+	now := c.clock.now()
 	result := 0
 
 	for _, object := range c.params.Objects {
-		in <- newAccount(object, c.clock.now(), "", "", "")
+		in <- newAccount(object, now, "", "", "")
 		result++
 	}
 
@@ -118,6 +129,7 @@ func (c Client) readFromParams(in chan<- *account) int {
 }
 
 func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
+	now := c.clock.now()
 	scanner := bufio.NewScanner(reader)
 	result := 0
 
@@ -126,7 +138,7 @@ func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
 		groups := lineRegex.FindStringSubmatch(line)
 
 		if len(groups) == 5 {
-			in <- newAccount(groups[3], c.clock.now(), groups[1], groups[2], groups[4])
+			in <- newAccount(groups[3], now, groups[1], groups[2], groups[4])
 			result++
 		} else {
 			c.log.Print(line)
@@ -182,8 +194,14 @@ func (c Client) ok(accounts []account) error {
 
 func (c Client) worker(in chan *account, out chan<- *account) {
 	for acct := range in {
-		if acct, found := c.cache.Accounts[acct.Object]; found {
-			out <- &acct
+		if ca, found := c.cache.Accounts[acct.Object]; found {
+			acct.Error = nil
+			acct.StatusCode = ca.StatusCode
+			acct.Timestamp = ca.Timestamp
+			acct.Value = ca.Value
+
+			out <- acct
+
 			continue
 		}
 

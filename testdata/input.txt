@@ -1,0 +1,4 @@
+First line
+file1=${CYBERARK:key1}
+file2=${CYBERARK:key2_multiline}
+Last line

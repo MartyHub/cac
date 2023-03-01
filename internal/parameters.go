@@ -13,6 +13,7 @@ import (
 type Parameters struct {
 	Aliases []string
 	Config  string
+	Output  string
 
 	CertFile string `mapstructure:"cert-file"`
 	KeyFile  string `mapstructure:"key-file"`
@@ -93,6 +94,10 @@ func (p Parameters) Validate() error {
 
 	if p.MaxTries <= 0 {
 		errors = append(errors, fmt.Sprintf("Max tries must be > 0: %v", p.MaxTries))
+	}
+
+	if p.Output != "" && !p.fromStdin() {
+		errors = append(errors, "no args should be given if output is set")
 	}
 
 	if len(errors) > 0 {

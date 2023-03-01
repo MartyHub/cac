@@ -1,4 +1,4 @@
-.PHONY: lint mock test
+.PHONY: clean lint mock_start mock_stop test
 
 default: all
 
@@ -7,20 +7,17 @@ all: lint test build
 build:
 	go build -ldflags="-X 'github.com/MartyHub/cac/cmd.Version=development'" -race
 
+clean: mock_stop
+	rm -f cac cac.exe coverage.out
+
 lint:
 	$(CURDIR)/bin/lint.sh
 
-mock:
-	podman run -it --rm \
-	--name    wiremock \
-	--publish 8443:8443 \
-	--volume  $(PWD)/wiremock:/home/wiremock:ro \
-	wiremock/wiremock:2.35.0 \
-	--disable-banner \
-	--disable-http \
-	--global-response-templating \
-	--https-port 8443 \
-	--verbose
+mock_start:
+	$(CURDIR)/bin/mock_start.sh
+
+mock_stop:
+	$(CURDIR)/bin/mock_stop.sh
 
 test:
 	$(CURDIR)/bin/test.sh $(test)
