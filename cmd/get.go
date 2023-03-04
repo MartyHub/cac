@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/MartyHub/cac/internal"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +17,13 @@ func newGetCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGet(cmd, args, params)
 		},
-		ValidArgsFunction: cobra.NoFileCompletions,
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if cache, err := internal.NewCache(params.Config); err == nil {
+				return cache.SortedObjects(strings.ToLower(toComplete)), cobra.ShellCompDirectiveNoFileComp
+			}
+
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 
 	result.Flags().StringVarP(&params.Config, "config", "c", "", "Config name")

@@ -69,7 +69,10 @@ func TestCache_SortedObjects(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, []string{"o1", "o2"}, c.SortedObjects())
+	assert.Equal(t, []string{"o1", "o2"}, c.SortedObjects(""))
+	assert.Equal(t, []string{"o1", "o2"}, c.SortedObjects("o"))
+	assert.Equal(t, []string{"o1"}, c.SortedObjects("o1"))
+	assert.Equal(t, []string{}, c.SortedObjects("a"))
 }
 
 func TestCache_workflow(t *testing.T) {

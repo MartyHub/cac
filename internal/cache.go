@@ -115,11 +115,13 @@ func (c *Cache) Remove() error {
 	return os.Remove(file)
 }
 
-func (c *Cache) SortedObjects() []string {
+func (c *Cache) SortedObjects(prefix string) []string {
 	result := make([]string, 0, c.Len())
 
 	for k := range c.Accounts {
-		result = append(result, k)
+		if prefix == "" || strings.HasPrefix(strings.ToLower(k), prefix) {
+			result = append(result, k)
+		}
 	}
 
 	sort.Strings(result)
