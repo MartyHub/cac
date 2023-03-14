@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -12,15 +11,7 @@ import (
 func Test_runConfigList(t *testing.T) {
 	const xdgConfigHome = "XDG_CONFIG_HOME"
 
-	pv, found := os.LookupEnv(xdgConfigHome)
-	_ = os.Setenv(xdgConfigHome, "../.config")
-	t.Cleanup(func() {
-		if found {
-			_ = os.Setenv(xdgConfigHome, pv)
-		} else {
-			_ = os.Unsetenv(xdgConfigHome)
-		}
-	})
+	t.Setenv(xdgConfigHome, "../.config")
 
 	cmd := &cobra.Command{}
 	buf := &bytes.Buffer{}
@@ -35,6 +26,7 @@ func Test_loadConfigAlias(t *testing.T) {
 		configHome string
 		alias      string
 	}
+
 	tests := []struct {
 		name    string
 		args    args

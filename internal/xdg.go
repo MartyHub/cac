@@ -15,7 +15,6 @@ func GetConfigHome() (string, error) {
 
 	if !found {
 		userHome, err := os.UserHomeDir()
-
 		if err != nil {
 			return "", err
 		}
@@ -25,7 +24,7 @@ func GetConfigHome() (string, error) {
 
 	result := path.Join(home, "cac")
 
-	if err := os.MkdirAll(result, 0o700); err != nil {
+	if err := os.MkdirAll(result, rwx); err != nil {
 		return "", err
 	}
 
@@ -37,7 +36,6 @@ func GetStateHome() (string, error) {
 
 	if !found {
 		userHome, err := os.UserHomeDir()
-
 		if err != nil {
 			return "", err
 		}
@@ -47,7 +45,7 @@ func GetStateHome() (string, error) {
 
 	result := path.Join(home, "cac")
 
-	if err := os.MkdirAll(result, 0o700); err != nil {
+	if err := os.MkdirAll(result, rwx); err != nil {
 		return "", err
 	}
 

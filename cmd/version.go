@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Value is injected during the build
-var Version = "unknown"
+// Version is injected during the build.
+var Version = "unknown" //nolint:gochecknoglobals
 
 func newVersionCommand() *cobra.Command {
 	full := false

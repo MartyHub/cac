@@ -1,0 +1,25 @@
+run:
+  modules-download-mode: readonly
+
+linters:
+  disable:
+    - exhaustruct
+    - paralleltest
+    - rowserrcheck
+    - testpackage
+    - varnamelen
+    - wastedassign
+    - wrapcheck
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - error
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - style
+    - test
+    - unused

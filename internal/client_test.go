@@ -18,12 +18,14 @@ import (
 )
 
 func newTestParameters(t *testing.T, ts *httptest.Server) Parameters {
+	t.Helper()
+
 	u, err := url.Parse(ts.URL)
 	require.NoError(t, err)
 
 	result := NewParameters()
 
-	result.AppId = "appId"
+	result.AppID = "appId"
 	result.Host = u.Host
 	result.MaxTries = 2
 	result.Objects = []string{"o1", "o2"}
@@ -33,6 +35,8 @@ func newTestParameters(t *testing.T, ts *httptest.Server) Parameters {
 }
 
 func newTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
+	t.Helper()
+
 	result := httptest.NewTLSServer(handler)
 
 	t.Cleanup(func() {
@@ -42,7 +46,7 @@ func newTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	return result
 }
 
-var now = time.Unix(1677008748, 0).UTC()
+var now = time.Unix(1677008748, 0).UTC() //nolint:gochecknoglobals
 
 func newFixedClock() fixedClock {
 	return fixedClock{
@@ -51,6 +55,8 @@ func newFixedClock() fixedClock {
 }
 
 func newTestClient(t *testing.T, handler http.HandlerFunc) Client {
+	t.Helper()
+
 	ts := newTestServer(t, handler)
 
 	return Client{
@@ -92,13 +98,29 @@ func TestClient_Run_JSON(t *testing.T) {
 			_, _ = fmt.Fprintf(w, "{\"Content\": \"value for %s\"}\n", object)
 		},
 	)
-	client.params.Json = true
+	client.params.JSON = true
 	buf := captureOutput(client)
 
 	assert.NoError(t, client.Run())
 	assert.Equal(
 		t,
-		"[\n  {\n    \"object\": \"o1\",\n    \"value\": \"value for o1\",\n    \"try\": 1,\n    \"statusCode\": 200,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  },\n  {\n    \"object\": \"o2\",\n    \"value\": \"value for o2\",\n    \"try\": 1,\n    \"statusCode\": 200,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  }\n]\n",
+		`[
+  {
+    "object": "o1",
+    "value": "value for o1",
+    "try": 1,
+    "statusCode": 200,
+    "timestamp": "2023-02-21T19:45:48Z"
+  },
+  {
+    "object": "o2",
+    "value": "value for o2",
+    "try": 1,
+    "statusCode": 200,
+    "timestamp": "2023-02-21T19:45:48Z"
+  }
+]
+`,
 		buf.String(),
 	)
 }
@@ -224,7 +246,7 @@ func TestClient_poolSize(t *testing.T) {
 func TestClient_query(t *testing.T) {
 	client := &Client{
 		params: Parameters{
-			AppId: "appId",
+			AppID: "appId",
 			Safe:  "safe",
 		},
 	}
@@ -293,7 +315,9 @@ func TestClient_readFromReader(t *testing.T) {
 	)
 
 	assert.Equal(t, "KEY2=VALUE2\n", buf.String())
+
 	result := <-in
+
 	assert.Equal(t, "o1", result.Object)
 	assert.Equal(t, "KEY1", result.key)
 	assert.Equal(t, "", result.prefix)

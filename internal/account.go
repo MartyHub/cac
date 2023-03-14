@@ -9,12 +9,12 @@ import (
 )
 
 type successBody struct {
-	Content string `json:"Content"`
+	Content string `json:"Content"` //nolint:tagliatelle
 }
 
 type errorBody struct {
-	ErrorCode string `json:"ErrorCode"`
-	ErrorMsg  string `json:"ErrorMsg"`
+	ErrorCode string `json:"ErrorCode"` //nolint:tagliatelle
+	ErrorMsg  string `json:"ErrorMsg"`  //nolint:tagliatelle
 }
 
 type account struct {
@@ -63,9 +63,9 @@ func (acct *account) parseError(data []byte) {
 	var result *errorBody
 
 	if err := parseBody(data, &result); err != nil {
-		acct.Error = fmt.Errorf("failed to parse JSON '%s'", string(data))
+		acct.Error = NewError(nil, "failed to parse JSON '%s'", string(data))
 	} else {
-		acct.Error = fmt.Errorf("%s: %s", result.ErrorCode, result.ErrorMsg)
+		acct.Error = NewError(nil, "%s: %s", result.ErrorCode, result.ErrorMsg)
 	}
 }
 
@@ -73,7 +73,7 @@ func (acct *account) parseSuccess(data []byte) {
 	var result *successBody
 
 	if err := parseBody(data, &result); err != nil {
-		acct.Error = fmt.Errorf("failed to parse JSON '%s'", string(data))
+		acct.Error = NewError(nil, "failed to parse JSON '%s'", string(data))
 	} else {
 		acct.Value = strings.Trim(result.Content, "'\"")
 	}
@@ -82,9 +82,9 @@ func (acct *account) parseSuccess(data []byte) {
 func (acct *account) shell(fromStdin bool) string {
 	if fromStdin {
 		return strings.Join([]string{acct.key, "=", acct.prefix, acct.Value, acct.suffix}, "")
-	} else {
-		return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
 	}
+
+	return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
 }
 
 func (acct *account) String() string {

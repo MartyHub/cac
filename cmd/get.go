@@ -27,15 +27,18 @@ func newGetCommand() *cobra.Command {
 	}
 
 	result.Flags().StringVarP(&params.Config, "config", "c", "", "Config name")
-	_ = result.RegisterFlagCompletionFunc("config", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		result, err := getConfigs(toComplete)
-		if err != nil {
-			return nil, cobra.ShellCompDirectiveError
-		}
+	_ = result.RegisterFlagCompletionFunc(
+		"config",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			result, err := getConfigs(toComplete)
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveError
+			}
 
-		return result, cobra.ShellCompDirectiveNoFileComp
-	})
-	result.Flags().StringVarP(&params.Output, "output", "o", "", "Generate files in given output path")
+			return result, cobra.ShellCompDirectiveNoFileComp
+		})
+
+	result.Flags().StringVarP(&params.Output, outputName, "o", "", "Generate files in given output path")
 
 	addConfigFlags(result, &params)
 
@@ -55,7 +58,6 @@ func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error
 	}
 
 	client, err := internal.NewClient(params)
-
 	if err != nil {
 		return err
 	}

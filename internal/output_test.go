@@ -1,14 +1,13 @@
 package internal
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var accounts = []account{
+var accounts = []account{ //nolint:gochecknoglobals
 	{
 		Object:     "object1",
 		Value:      "value1",
@@ -20,7 +19,7 @@ var accounts = []account{
 	{
 		Object:    "object",
 		Try:       3,
-		Error:     fmt.Errorf("test error"),
+		Error:     NewError(nil, "test error"),
 		Timestamp: time.Unix(1677008748, 0).UTC(),
 	},
 }
@@ -31,7 +30,26 @@ func Test_jsonOutput(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
-		"[\n  {\n    \"object\": \"object1\",\n    \"value\": \"value1\",\n    \"try\": 1,\n    \"statusCode\": 200,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  },\n  {\n    \"object\": \"object\",\n    \"value\": \"\",\n    \"try\": 3,\n    \"error\": {},\n    \"statusCode\": 0,\n    \"timestamp\": \"2023-02-21T19:45:48Z\"\n  }\n]",
+		`[
+  {
+    "object": "object1",
+    "value": "value1",
+    "try": 1,
+    "statusCode": 200,
+    "timestamp": "2023-02-21T19:45:48Z"
+  },
+  {
+    "object": "object",
+    "value": "",
+    "try": 3,
+    "error": {
+      "Cause": null,
+      "Message": "test error"
+    },
+    "statusCode": 0,
+    "timestamp": "2023-02-21T19:45:48Z"
+  }
+]`,
 		output,
 	)
 }

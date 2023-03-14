@@ -2,8 +2,8 @@ package internal
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +16,10 @@ import (
 
 var lineRegex = regexp.MustCompile(`^([^#][^=]*)=(.*)\$\{CYBERARK:(.+)}(.*)$`)
 
+const (
+	lineRegexGroups = 5
+)
+
 type Client struct {
 	clock  clock
 	cache  *Cache
@@ -26,7 +30,6 @@ type Client struct {
 
 func NewClient(params Parameters) (Client, error) {
 	cert, err := tls.LoadX509KeyPair(params.CertFile, params.KeyFile)
-
 	if err != nil {
 		return Client{}, err
 	}
@@ -52,7 +55,7 @@ func NewClient(params Parameters) (Client, error) {
 					Certificates:       []tls.Certificate{cert},
 					MinVersion:         tls.VersionTLS12,
 					Renegotiation:      tls.RenegotiateOnceAsClient,
-					InsecureSkipVerify: params.SkipVerify,
+					InsecureSkipVerify: params.SkipVerify, //nolint:gosec
 				},
 			},
 		},
@@ -81,27 +84,25 @@ func (c Client) Run() error {
 
 	if c.cache.exists() {
 		c.cache.merge(accounts)
-		err := c.cache.save()
-		if err != nil {
-			return err
-		}
+
+		return c.cache.save()
 	}
 
 	return c.ok(accounts)
 }
 
 func (c Client) output(accounts []account) error {
-	if c.params.Json {
+	switch {
+	case c.params.JSON:
 		output, err := jsonOutput(accounts)
-
 		if err != nil {
 			return err
 		}
 
 		c.log.Print(output)
-	} else if c.params.Output != "" {
+	case c.params.Output != "":
 		return fileOutput(accounts, c.params.Output)
-	} else {
+	default:
 		c.log.Print(shellOutput(accounts, c.params.fromStdin()))
 	}
 
@@ -137,7 +138,7 @@ func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
 		line := scanner.Text()
 		groups := lineRegex.FindStringSubmatch(line)
 
-		if len(groups) == 5 {
+		if len(groups) == lineRegexGroups {
 			in <- newAccount(groups[3], now, groups[1], groups[2], groups[4])
 			result++
 		} else {
@@ -186,7 +187,7 @@ func (c Client) ok(accounts []account) error {
 	}
 
 	if errCount > 0 {
-		return fmt.Errorf("%d error(s) / %d account(s)", errCount, len(accounts))
+		return NewError(nil, "%d error(s) / %d account(s)", errCount, len(accounts))
 	}
 
 	return nil
@@ -238,7 +239,7 @@ func (c Client) url(values url.Values) *url.URL {
 func (c Client) query(object string) url.Values {
 	result := url.Values{}
 
-	result.Set("AppID", c.params.AppId)
+	result.Set("AppID", c.params.AppID)
 	result.Set("Safe", c.params.Safe)
 	result.Set("Object", object)
 
@@ -246,10 +247,22 @@ func (c Client) query(object string) url.Values {
 }
 
 func (c Client) get(acct *account) {
-	response, err := c.http.Get(c.url(c.query(acct.Object)).String())
-
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		c.url(c.query(acct.Object)).String(),
+		nil,
+	)
 	if err != nil {
 		acct.Error = err
+
+		return
+	}
+
+	response, err := c.http.Do(req)
+	if err != nil {
+		acct.Error = err
+
 		return
 	}
 
@@ -260,10 +273,11 @@ func (c Client) get(acct *account) {
 	}()
 
 	acct.StatusCode = response.StatusCode
-	data, err := io.ReadAll(response.Body)
 
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		acct.Error = err
+
 		return
 	}
 

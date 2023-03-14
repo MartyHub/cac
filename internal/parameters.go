@@ -19,11 +19,11 @@ type Parameters struct {
 	KeyFile  string `mapstructure:"key-file"`
 	Host     string
 
-	AppId   string `mapstructure:"app-id"`
+	AppID   string `mapstructure:"app-id"`
 	Safe    string
 	Objects []string
 
-	Json       bool
+	JSON       bool
 	SkipVerify bool `mapstructure:"skip-verify"`
 	MaxConns   int  `mapstructure:"max-connections"`
 	MaxTries   int  `mapstructure:"max-tries"`
@@ -49,6 +49,7 @@ func (p Parameters) Fatalf(format string, v ...any) {
 	os.Exit(1)
 }
 
+//nolint:cyclop
 func (p Parameters) Validate() error {
 	errors := make([]string, 0)
 
@@ -64,7 +65,7 @@ func (p Parameters) Validate() error {
 		errors = append(errors, "Host is mandatory")
 	}
 
-	if p.AppId == "" {
+	if p.AppID == "" {
 		errors = append(errors, "Application Id is mandatory")
 	}
 
@@ -73,19 +74,7 @@ func (p Parameters) Validate() error {
 	}
 
 	if len(p.Objects) == 0 {
-		if p.MaxConns <= 0 {
-			errors = append(errors, "Either one object is required or max connections must be > 0")
-		} else {
-			stat, err := os.Stdin.Stat()
-
-			if err != nil {
-				p.Fatalf("Failed to stat stdin: %v", err)
-			}
-
-			if stat.Mode()&os.ModeCharDevice != 0 {
-				errors = append(errors, "Either one object or a pipe is required")
-			}
-		}
+		errors = p.validateObject(errors)
 	}
 
 	if p.MaxConns < 0 {
@@ -102,10 +91,28 @@ func (p Parameters) Validate() error {
 
 	if len(errors) > 0 {
 		p.Errorf(strings.Join(errors, "\n"))
+
 		return pflag.ErrHelp
 	}
 
 	return nil
+}
+
+func (p Parameters) validateObject(errors []string) []string {
+	if p.MaxConns <= 0 {
+		return append(errors, "Either one object is required or max connections must be > 0")
+	}
+
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		p.Fatalf("Failed to stat stdin: %v", err)
+	}
+
+	if stat.Mode()&os.ModeCharDevice != 0 {
+		errors = append(errors, "Either one object or a pipe is required")
+	}
+
+	return errors
 }
 
 func (p Parameters) fromStdin() bool {

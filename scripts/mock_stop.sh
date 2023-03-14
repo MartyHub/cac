@@ -2,7 +2,7 @@
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-source "${script_dir}/env.sh"
+source "${script_dir}/env"
 
 podman_id=$(podman ps --filter "name=wiremock" --filter "status=running" --quiet)
 

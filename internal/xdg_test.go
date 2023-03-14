@@ -1,22 +1,13 @@
 package internal
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetConfigHome(t *testing.T) {
-	pv, found := os.LookupEnv(xdgConfigHome)
-	_ = os.Setenv(xdgConfigHome, "../.config")
-	t.Cleanup(func() {
-		if found {
-			_ = os.Setenv(xdgConfigHome, pv)
-		} else {
-			_ = os.Unsetenv(xdgConfigHome)
-		}
-	})
+	t.Setenv(xdgConfigHome, "../.config")
 
 	home, err := GetConfigHome()
 
@@ -25,15 +16,7 @@ func TestGetConfigHome(t *testing.T) {
 }
 
 func TestGetStateHome(t *testing.T) {
-	pv, found := os.LookupEnv(xdgStateHome)
-	_ = os.Setenv(xdgStateHome, "../.config")
-	t.Cleanup(func() {
-		if found {
-			_ = os.Setenv(xdgStateHome, pv)
-		} else {
-			_ = os.Unsetenv(xdgStateHome)
-		}
-	})
+	t.Setenv(xdgStateHome, "../.config")
 
 	home, err := GetStateHome()
 

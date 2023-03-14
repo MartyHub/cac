@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +10,7 @@ func Test_account_newTry(t *testing.T) {
 	acct := &account{
 		Object:     "object",
 		Try:        1,
-		Error:      fmt.Errorf("error"),
+		Error:      NewError(nil, "error"),
 		StatusCode: 500,
 	}
 
@@ -32,7 +31,7 @@ func Test_account_ok(t *testing.T) {
 		{
 			name: "err",
 			acct: &account{
-				Error: fmt.Errorf("test"),
+				Error: NewError(nil, "test"),
 			},
 			want: false,
 		},
@@ -76,7 +75,7 @@ func Test_account_parseError(t *testing.T) {
 			args: args{
 				data: []byte("Invalid JSON"),
 			},
-			want: fmt.Errorf("failed to parse JSON 'Invalid JSON'"),
+			want: NewError(nil, "failed to parse JSON 'Invalid JSON'"),
 		},
 		{
 			name: "cyberArkError",
@@ -84,7 +83,7 @@ func Test_account_parseError(t *testing.T) {
 			args: args{
 				data: []byte("{\"ErrorCode\": \"code\", \"ErrorMsg\": \"message\"}"),
 			},
-			want: fmt.Errorf("code: message"),
+			want: NewError(nil, "code: message"),
 		},
 	}
 
@@ -100,6 +99,7 @@ func Test_account_parseSuccess(t *testing.T) {
 	type args struct {
 		data []byte
 	}
+
 	tests := []struct {
 		name      string
 		acct      *account
@@ -113,7 +113,7 @@ func Test_account_parseSuccess(t *testing.T) {
 			args: args{
 				data: []byte("Invalid JSON"),
 			},
-			wantErr: fmt.Errorf("failed to parse JSON 'Invalid JSON'"),
+			wantErr: NewError(nil, "failed to parse JSON 'Invalid JSON'"),
 		},
 		{
 			name: "ok",
@@ -226,11 +226,13 @@ func Test_parseBody(t *testing.T) {
 		data   []byte
 		result *T
 	}
+
 	type testCase[T any] struct {
 		name    string
 		args    args[T]
 		wantErr bool
 	}
+
 	tests := []testCase[successBody]{
 		{
 			name: "error",
@@ -261,6 +263,7 @@ func Test_account_shell(t *testing.T) {
 	type args struct {
 		fromStdin bool
 	}
+
 	tests := []struct {
 		name string
 		acct *account

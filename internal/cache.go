@@ -63,7 +63,6 @@ func NewCache(config string) (*Cache, error) {
 	}
 
 	file, err := result.filePath()
-
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +106,6 @@ func (c *Cache) Len() int {
 
 func (c *Cache) Remove() error {
 	file, err := c.filePath()
-
 	if err != nil {
 		return err
 	}
@@ -139,7 +137,6 @@ func (c *Cache) fileName() string {
 
 func (c *Cache) filePath() (string, error) {
 	home, err := GetStateHome()
-
 	if err != nil {
 		return "", err
 	}
@@ -150,7 +147,6 @@ func (c *Cache) filePath() (string, error) {
 func (c *Cache) checkPermissions(file string) error {
 	if runtime.GOOS != "windows" {
 		stat, err := os.Stat(file)
-
 		if err != nil {
 			return err
 		}
@@ -179,19 +175,16 @@ func (c *Cache) save() error {
 	}
 
 	bytes, err := json.MarshalIndent(c.Accounts, "", "  ")
-
 	if err != nil {
 		return err
 	}
 
 	filePath, err := c.filePath()
-
 	if err != nil {
 		return err
 	}
 
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, cacheFilePerm)
-
 	if err != nil {
 		return err
 	}

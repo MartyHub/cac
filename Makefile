@@ -11,13 +11,13 @@ clean: mock_stop
 	rm -f cac cac.exe coverage.out
 
 lint:
-	$(CURDIR)/bin/lint.sh
+	$(CURDIR)/scripts/lint.sh
 
 mock_start:
-	$(CURDIR)/bin/mock_start.sh
+	$(CURDIR)/scripts/mock_start.sh
 
 mock_stop:
-	$(CURDIR)/bin/mock_stop.sh
+	$(CURDIR)/scripts/mock_stop.sh
 
 test:
-	$(CURDIR)/bin/test.sh $(test)
+	$(CURDIR)/scripts/test.sh $(test)
