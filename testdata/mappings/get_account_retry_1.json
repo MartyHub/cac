@@ -18,6 +18,7 @@
         "urlPath": "/AIMWebService/api/Accounts"
     },
     "response": {
+        "fixedDelayMilliseconds": 1000,
         "status": 503
     }
 }

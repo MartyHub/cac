@@ -15,6 +15,7 @@
         "urlPath": "/AIMWebService/api/Accounts"
     },
     "response": {
+        "fixedDelayMilliseconds": 1000,
         "jsonBody": {
             "Content": "{{regexExtract request.query.Object '(?i)(.+)_multiline' 'parts'}}Multiline Value\nof\n{{parts.0}}"
         },

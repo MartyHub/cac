@@ -1,4 +1,7 @@
+# First comment
 First line
 file1=${CYBERARK:key1}
+#commented=${CYBERARK:commented}
 file2=${CYBERARK:key2_multiline}
+file3=${CYBERARK:key3_retry}
 Last line

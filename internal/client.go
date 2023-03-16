@@ -67,13 +67,17 @@ func NewClient(params Parameters) (Client, error) {
 func (c Client) Run() error {
 	size := c.poolSize()
 	in := make(chan *account, size)
-	out := make(chan *account)
+	out := make(chan *account, size)
 
 	for i := 0; i < size; i++ {
 		go c.worker(in, out)
 	}
 
-	accounts := c.collect(out, c.read(in))
+	count := make(chan int)
+
+	go c.read(in, count)
+
+	accounts := c.collect(out, count)
 
 	close(in)
 
@@ -109,12 +113,12 @@ func (c Client) output(accounts []account) error {
 	return nil
 }
 
-func (c Client) read(in chan<- *account) int {
+func (c Client) read(in chan<- *account, count chan<- int) {
 	if c.params.fromStdin() {
-		return c.readFromReader(in, os.Stdin)
+		count <- c.readFromReader(in, os.Stdin)
+	} else {
+		count <- c.readFromParams(in)
 	}
-
-	return c.readFromParams(in)
 }
 
 func (c Client) readFromParams(in chan<- *account) int {
@@ -161,13 +165,16 @@ func (c Client) poolSize() int {
 	return c.params.MaxConns
 }
 
-func (c Client) collect(accounts <-chan *account, count int) []account {
+func (c Client) collect(accounts <-chan *account, count <-chan int) []account {
+	l := 0
 	results := make([]account, 0)
 
-	for len(results) < count {
-		acct := <-accounts
-
-		results = append(results, *acct)
+	for l == 0 || len(results) != l {
+		select {
+		case acct := <-accounts:
+			results = append(results, *acct)
+		case l = <-count:
+		}
 	}
 
 	sort.Slice(results, func(i, j int) bool {
