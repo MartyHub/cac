@@ -167,13 +167,15 @@ func (c Client) poolSize() int {
 
 func (c Client) collect(accounts <-chan *account, count <-chan int) []account {
 	l := 0
+	lenKnown := false
 	results := make([]account, 0)
 
-	for l == 0 || len(results) != l {
+	for !lenKnown || len(results) != l {
 		select {
 		case acct := <-accounts:
 			results = append(results, *acct)
 		case l = <-count:
+			lenKnown = true
 		}
 	}
 
