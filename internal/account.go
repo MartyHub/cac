@@ -92,9 +92,5 @@ func (acct *account) String() string {
 }
 
 func parseBody[T any](data []byte, result *T) error {
-	if err := json.Unmarshal(data, &result); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(data, &result)
 }

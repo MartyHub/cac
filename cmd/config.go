@@ -148,9 +148,9 @@ func runConfigRemove(config string) error {
 		if err != nil {
 			if os.IsNotExist(err) {
 				continue
-			} else {
-				return err
 			}
+
+			return err
 		}
 
 		if !info.IsDir() {
