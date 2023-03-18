@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -141,7 +140,7 @@ func (c *Cache) filePath() (string, error) {
 		return "", err
 	}
 
-	return path.Join(home, c.fileName()), nil
+	return filepath.Join(home, c.fileName()), nil
 }
 
 func (c *Cache) checkPermissions(file string) error {

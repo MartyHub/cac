@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -142,7 +141,7 @@ func runConfigRemove(config string) error {
 	count := 0
 
 	for _, ext := range viper.SupportedExts {
-		file := path.Join(configHome, config+"."+ext)
+		file := filepath.Join(configHome, config+"."+ext)
 
 		info, err := os.Stat(file)
 		if err != nil {
@@ -194,7 +193,7 @@ func runConfigSet(cmd *cobra.Command, config string) error {
 	configPath, err := loadConfig(cmd, config)
 	if err != nil {
 		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			viper.SetConfigFile(path.Join(configPath, config+".yaml"))
+			viper.SetConfigFile(filepath.Join(configPath, config+".yaml"))
 		} else {
 			return err
 		}

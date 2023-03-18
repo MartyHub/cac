@@ -2,7 +2,7 @@ package internal
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 )
 
 const (
@@ -19,10 +19,10 @@ func GetConfigHome() (string, error) {
 			return "", err
 		}
 
-		home = path.Join(userHome, ".config")
+		home = filepath.Join(userHome, ".config")
 	}
 
-	result := path.Join(home, "cac")
+	result := filepath.Join(home, "cac")
 
 	if err := os.MkdirAll(result, rwx); err != nil {
 		return "", err
@@ -40,10 +40,10 @@ func GetStateHome() (string, error) {
 			return "", err
 		}
 
-		home = path.Join(userHome, ".local", "state")
+		home = filepath.Join(userHome, ".local", "state")
 	}
 
-	result := path.Join(home, "cac")
+	result := filepath.Join(home, "cac")
 
 	if err := os.MkdirAll(result, rwx); err != nil {
 		return "", err
