@@ -223,10 +223,10 @@ func (c Client) worker(in chan *account, out chan<- *account) {
 			c.params.Errorf("Failed to get %v", acct)
 
 			if acct.retry(c.params.MaxTries) {
-				go func() {
+				go func(acct *account) {
 					time.Sleep(time.Duration(acct.Try*acct.Try) * c.params.Wait)
 					in <- acct
-				}()
+				}(acct)
 
 				continue
 			}
