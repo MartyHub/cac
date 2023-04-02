@@ -200,8 +200,8 @@ func TestClient_poolSize(t *testing.T) {
 			name: "maxConns",
 			client: Client{
 				params: Parameters{
-					MaxConns: 2,
-					Objects:  []string{"o1", "o2", "o3", "o4"},
+					Config:  Config{MaxConns: 2},
+					Objects: []string{"o1", "o2", "o3", "o4"},
 				},
 			},
 			want: 2,
@@ -210,8 +210,8 @@ func TestClient_poolSize(t *testing.T) {
 			name: "maxConns > length",
 			client: Client{
 				params: Parameters{
-					MaxConns: 4,
-					Objects:  []string{"o1", "o2"},
+					Config:  Config{MaxConns: 4},
+					Objects: []string{"o1", "o2"},
 				},
 			},
 			want: 2,
@@ -229,7 +229,7 @@ func TestClient_poolSize(t *testing.T) {
 			name: "stdin",
 			client: Client{
 				params: Parameters{
-					MaxConns: 2,
+					Config: Config{MaxConns: 2},
 				},
 			},
 			want: 2,
@@ -246,8 +246,10 @@ func TestClient_poolSize(t *testing.T) {
 func TestClient_query(t *testing.T) {
 	client := &Client{
 		params: Parameters{
-			AppID: "appId",
-			Safe:  "safe",
+			Config: Config{
+				AppID: "appId",
+				Safe:  "safe",
+			},
 		},
 	}
 
@@ -265,7 +267,7 @@ func TestClient_query(t *testing.T) {
 func TestClient_url(t *testing.T) {
 	client := &Client{
 		params: Parameters{
-			Host: "host",
+			Config: Config{Host: "host"},
 		},
 	}
 

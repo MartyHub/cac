@@ -34,7 +34,7 @@ func NewClient(params Parameters) (Client, error) {
 		return Client{}, err
 	}
 
-	cache, err := NewCache(params.Config)
+	cache, err := NewCache(params.CfgName)
 	if err != nil {
 		return Client{}, err
 	}

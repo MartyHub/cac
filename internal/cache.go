@@ -112,12 +112,17 @@ func (c *Cache) Remove() error {
 	return os.Remove(file)
 }
 
-func (c *Cache) SortedObjects(prefix string) []string {
+func (c *Cache) SortedAccounts(prefix string, exclusions []string) []string {
 	result := make([]string, 0, c.Len())
 
-	for k := range c.Accounts {
-		if prefix == "" || strings.HasPrefix(strings.ToLower(k), prefix) {
-			result = append(result, k)
+	for name := range c.Accounts {
+		lowerName := strings.ToLower(name)
+
+		if (prefix == "" || strings.HasPrefix(lowerName, prefix)) &&
+			!ContainsFunc(exclusions, func(s string) bool {
+				return strings.ToLower(s) == lowerName
+			}) {
+			result = append(result, name)
 		}
 	}
 

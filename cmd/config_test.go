@@ -18,10 +18,10 @@ func Test_runConfigList(t *testing.T) {
 	cmd.SetOut(buf)
 
 	assert.NoError(t, runConfigList(cmd, false))
-	assert.Equal(t, "json_config\nyaml_config\n", buf.String())
+	assert.Equal(t, "json_config\n", buf.String())
 }
 
-func Test_loadConfigAlias(t *testing.T) {
+func Test_readConfigAlias(t *testing.T) {
 	type args struct {
 		configHome string
 		alias      string
@@ -52,7 +52,7 @@ func Test_loadConfigAlias(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := loadConfigAlias(tt.args.configHome, tt.args.alias); (err != nil) != tt.wantErr {
+			if _, err := readConfigAlias(tt.args.configHome, tt.args.alias); (err != nil) != tt.wantErr {
 				t.Errorf("loadConfigAlias() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

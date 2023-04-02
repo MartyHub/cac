@@ -60,7 +60,7 @@ func printCache(cmd *cobra.Command, config string) error {
 		return err
 	}
 
-	for _, object := range cache.SortedObjects("") {
+	for _, object := range cache.SortedAccounts("", nil) {
 		cmd.Println("  ", object, "=", cache.Accounts[object].Value)
 	}
 

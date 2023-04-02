@@ -57,7 +57,7 @@ func TestCache_clean(t *testing.T) {
 	assert.Contains(t, c.Accounts, "o1")
 }
 
-func TestCache_SortedObjects(t *testing.T) {
+func TestCache_SortedAccounts(t *testing.T) {
 	c := Cache{
 		Accounts: map[string]account{
 			"o1": {
@@ -69,10 +69,10 @@ func TestCache_SortedObjects(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, []string{"o1", "o2"}, c.SortedObjects(""))
-	assert.Equal(t, []string{"o1", "o2"}, c.SortedObjects("o"))
-	assert.Equal(t, []string{"o1"}, c.SortedObjects("o1"))
-	assert.Equal(t, []string{}, c.SortedObjects("a"))
+	assert.Equal(t, []string{"o1", "o2"}, c.SortedAccounts("", nil))
+	assert.Equal(t, []string{"o1", "o2"}, c.SortedAccounts("o", nil))
+	assert.Equal(t, []string{"o1"}, c.SortedAccounts("o1", nil))
+	assert.Equal(t, []string{}, c.SortedAccounts("a", nil))
 }
 
 func TestCache_workflow(t *testing.T) {

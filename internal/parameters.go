@@ -5,31 +5,17 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/spf13/pflag"
 )
 
 type Parameters struct {
-	Aliases []string
-	Config  string
-	Output  string
+	Config
 
-	CertFile string `mapstructure:"cert-file"`
-	KeyFile  string `mapstructure:"key-file"`
-	Host     string
-
-	AppID   string `mapstructure:"app-id"`
-	Safe    string
+	CfgName string
+	JSON    bool
 	Objects []string
-
-	JSON       bool
-	SkipVerify bool `mapstructure:"skip-verify"`
-	MaxConns   int  `mapstructure:"max-connections"`
-	MaxTries   int  `mapstructure:"max-tries"`
-	Expiry     time.Duration
-	Timeout    time.Duration
-	Wait       time.Duration
+	Output  string
 
 	log *log.Logger
 }

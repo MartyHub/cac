@@ -10,50 +10,48 @@ import (
 func newGetCommand() *cobra.Command {
 	params := internal.NewParameters()
 	result := &cobra.Command{
-		Use:     "get <object>...",
+		Use:     "get <config> <account>...",
 		Aliases: []string{"g"},
-		Args:    cobra.ArbitraryArgs,
+		Args:    cobra.MinimumNArgs(1),
 		Short:   "Get accounts from CyberArk",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGet(cmd, args, params)
+			return runGet(args, params)
 		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if cache, err := internal.NewCache(params.Config); err == nil {
-				return cache.SortedObjects(strings.ToLower(toComplete)), cobra.ShellCompDirectiveNoFileComp
+			if len(args) == 0 {
+				return completeConfig(cmd, args, toComplete)
 			}
 
-			return nil, cobra.ShellCompDirectiveNoFileComp
+			return completeAccount(args[0], args[1:], toComplete)
 		},
 	}
 
-	result.Flags().StringVarP(&params.Config, "config", "c", "", "Config name")
-	_ = result.RegisterFlagCompletionFunc(
-		"config",
-		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			result, err := getConfigs(toComplete)
-			if err != nil {
-				return nil, cobra.ShellCompDirectiveError
-			}
-
-			return result, cobra.ShellCompDirectiveNoFileComp
-		})
-
+	result.Flags().BoolVarP(&params.JSON, jsonName, "j", false, "Output JSON")
 	result.Flags().StringVarP(&params.Output, outputName, "o", "", "Generate files in given output path")
-
-	addConfigFlags(result, &params)
 
 	return result
 }
 
-func runGet(cmd *cobra.Command, args []string, params internal.Parameters) error {
-	params, err := applyConfig(cmd, params)
+func completeAccount(config string, accounts []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if cache, err := internal.NewCache(config); err == nil {
+		return cache.SortedAccounts(strings.ToLower(toComplete), accounts), cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func runGet(args []string, params internal.Parameters) error {
+	var err error
+
+	params.CfgName = args[0]
+	params.Objects = args[1:]
+
+	params.Config, err = readConfig(params.CfgName)
 	if err != nil {
 		return err
 	}
 
-	params.Objects = args
-
-	if err := params.Validate(); err != nil {
+	if err = params.Validate(); err != nil {
 		return err
 	}
 
