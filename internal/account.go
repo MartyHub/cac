@@ -17,7 +17,7 @@ type errorBody struct {
 	ErrorMsg  string `json:"ErrorMsg"`  //nolint:tagliatelle
 }
 
-type account struct {
+type Account struct {
 	Object              string    `json:"object"`
 	Value               string    `json:"value"`
 	Try                 int       `json:"try"`
@@ -27,8 +27,8 @@ type account struct {
 	key, prefix, suffix string
 }
 
-func newAccount(object string, now time.Time, key, prefix, suffix string) *account {
-	return &account{
+func newAccount(object string, now time.Time, key, prefix, suffix string) *Account {
+	return &Account{
 		Object:    object,
 		Timestamp: now,
 		key:       key,
@@ -37,13 +37,13 @@ func newAccount(object string, now time.Time, key, prefix, suffix string) *accou
 	}
 }
 
-func (acct *account) newTry() {
+func (acct *Account) newTry() {
 	acct.Try++
 	acct.Error = nil
 	acct.StatusCode = 0
 }
 
-func (acct *account) retry(maxTries int) bool {
+func (acct *Account) retry(maxTries int) bool {
 	if acct.Try >= maxTries {
 		return false
 	}
@@ -55,11 +55,11 @@ func (acct *account) retry(maxTries int) bool {
 		acct.StatusCode == http.StatusGatewayTimeout
 }
 
-func (acct *account) ok() bool {
+func (acct *Account) ok() bool {
 	return acct.Error == nil && acct.StatusCode == http.StatusOK
 }
 
-func (acct *account) parseError(data []byte) {
+func (acct *Account) parseError(data []byte) {
 	var result *errorBody
 
 	if err := parseBody(data, &result); err != nil {
@@ -69,7 +69,7 @@ func (acct *account) parseError(data []byte) {
 	}
 }
 
-func (acct *account) parseSuccess(data []byte) {
+func (acct *Account) parseSuccess(data []byte) {
 	var result *successBody
 
 	if err := parseBody(data, &result); err != nil {
@@ -79,7 +79,7 @@ func (acct *account) parseSuccess(data []byte) {
 	}
 }
 
-func (acct *account) shell(fromStdin bool) string {
+func (acct *Account) shell(fromStdin bool) string {
 	if fromStdin {
 		return strings.Join([]string{acct.key, "=", acct.prefix, acct.Value, acct.suffix}, "")
 	}
@@ -87,7 +87,7 @@ func (acct *account) shell(fromStdin bool) string {
 	return fmt.Sprintf("%s='%s'", acct.Object, acct.Value)
 }
 
-func (acct *account) String() string {
+func (acct *Account) String() string {
 	return fmt.Sprintf("%s # %d: status=%d, error=%v", acct.Object, acct.Try, acct.StatusCode, acct.Error)
 }
 

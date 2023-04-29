@@ -36,16 +36,23 @@ func newCacheListCommand() *cobra.Command {
 }
 
 func runCacheList(cmd *cobra.Command, verbose bool) error {
-	caches, err := internal.GetCaches("")
+	cache, err := internal.NewDBCache()
 	if err != nil {
 		return err
 	}
 
-	for _, cache := range caches {
-		cmd.Println(cache)
+	defer cache.Close()
+
+	configs, err := cache.Configs("")
+	if err != nil {
+		return err
+	}
+
+	for _, cfg := range configs {
+		cmd.Println(cfg)
 
 		if verbose {
-			if err = printCache(cmd, cache); err != nil {
+			if err = printCache(cmd, cache, cfg); err != nil {
 				return err
 			}
 		}
@@ -54,14 +61,14 @@ func runCacheList(cmd *cobra.Command, verbose bool) error {
 	return nil
 }
 
-func printCache(cmd *cobra.Command, config string) error {
-	cache, err := internal.NewCache(config)
+func printCache(cmd *cobra.Command, cache internal.DBCache, config string) error {
+	accounts, err := cache.SortedAccounts(config, "", nil)
 	if err != nil {
 		return err
 	}
 
-	for _, object := range cache.SortedAccounts("", nil) {
-		cmd.Println("  ", object, "=", cache.Accounts[object].Value)
+	for _, acct := range accounts {
+		cmd.Println("  ", acct.Object, "=", acct.Value)
 	}
 
 	return nil
@@ -81,7 +88,14 @@ func newCacheRemoveCommand() *cobra.Command {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			result, err := internal.GetCaches(toComplete)
+			cache, err := internal.NewDBCache()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveError
+			}
+
+			defer cache.Close()
+
+			result, err := cache.Configs(toComplete)
 			if err != nil {
 				return nil, cobra.ShellCompDirectiveError
 			}
@@ -94,10 +108,12 @@ func newCacheRemoveCommand() *cobra.Command {
 }
 
 func runCacheRemove(config string) error {
-	cache, err := internal.NewCache(config)
+	cache, err := internal.NewDBCache()
 	if err != nil {
 		return err
 	}
 
-	return cache.Remove()
+	defer cache.Close()
+
+	return cache.RemoveAll(config)
 }

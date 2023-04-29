@@ -7,7 +7,7 @@ import (
 )
 
 func Test_account_newTry(t *testing.T) {
-	acct := &account{
+	acct := &Account{
 		Object:     "object",
 		Try:        1,
 		Error:      NewError(nil, "error"),
@@ -25,26 +25,26 @@ func Test_account_newTry(t *testing.T) {
 func Test_account_ok(t *testing.T) {
 	tests := []struct {
 		name string
-		acct *account
+		acct *Account
 		want bool
 	}{
 		{
 			name: "err",
-			acct: &account{
+			acct: &Account{
 				Error: NewError(nil, "test"),
 			},
 			want: false,
 		},
 		{
 			name: "statusCode",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 500,
 			},
 			want: false,
 		},
 		{
 			name: "ok",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 200,
 			},
 			want: true,
@@ -65,13 +65,13 @@ func Test_account_parseError(t *testing.T) {
 
 	tests := []struct {
 		name string
-		acct *account
+		acct *Account
 		args args
 		want error
 	}{
 		{
 			name: "invalidJSON",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte("Invalid JSON"),
 			},
@@ -79,7 +79,7 @@ func Test_account_parseError(t *testing.T) {
 		},
 		{
 			name: "cyberArkError",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte("{\"ErrorCode\": \"code\", \"ErrorMsg\": \"message\"}"),
 			},
@@ -102,14 +102,14 @@ func Test_account_parseSuccess(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		acct      *account
+		acct      *Account
 		args      args
 		wantErr   error
 		wantValue string
 	}{
 		{
 			name: "invalidJSON",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte("Invalid JSON"),
 			},
@@ -117,7 +117,7 @@ func Test_account_parseSuccess(t *testing.T) {
 		},
 		{
 			name: "ok",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte(`{"Content": "value"}`),
 			},
@@ -125,7 +125,7 @@ func Test_account_parseSuccess(t *testing.T) {
 		},
 		{
 			name: "single quote",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte(`{"Content": "'value'"}`),
 			},
@@ -133,7 +133,7 @@ func Test_account_parseSuccess(t *testing.T) {
 		},
 		{
 			name: "double quote",
-			acct: &account{},
+			acct: &Account{},
 			args: args{
 				data: []byte(`{"Content": "\"value\""}`),
 			},
@@ -153,12 +153,12 @@ func Test_account_parseSuccess(t *testing.T) {
 func Test_account_retry(t *testing.T) {
 	tests := []struct {
 		name string
-		acct *account
+		acct *Account
 		want bool
 	}{
 		{
 			name: "200",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 200,
 				Try:        1,
 			},
@@ -166,7 +166,7 @@ func Test_account_retry(t *testing.T) {
 		},
 		{
 			name: "500",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 500,
 				Try:        1,
 			},
@@ -174,7 +174,7 @@ func Test_account_retry(t *testing.T) {
 		},
 		{
 			name: "502",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 502,
 				Try:        2,
 			},
@@ -182,7 +182,7 @@ func Test_account_retry(t *testing.T) {
 		},
 		{
 			name: "503",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 503,
 				Try:        3,
 			},
@@ -190,7 +190,7 @@ func Test_account_retry(t *testing.T) {
 		},
 		{
 			name: "504",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 504,
 				Try:        4,
 			},
@@ -198,7 +198,7 @@ func Test_account_retry(t *testing.T) {
 		},
 		{
 			name: "504",
-			acct: &account{
+			acct: &Account{
 				StatusCode: 504,
 				Try:        5,
 			},
@@ -216,7 +216,7 @@ func Test_account_retry(t *testing.T) {
 func Test_newAccount(t *testing.T) {
 	assert.Equal(
 		t,
-		&account{Object: "object", Timestamp: now},
+		&Account{Object: "object", Timestamp: now},
 		newAccount("object", now, "", "", ""),
 	)
 }
@@ -266,13 +266,13 @@ func Test_account_shell(t *testing.T) {
 
 	tests := []struct {
 		name string
-		acct *account
+		acct *Account
 		args args
 		want string
 	}{
 		{
 			name: "from params",
-			acct: &account{
+			acct: &Account{
 				Object: "object",
 				Value:  "value",
 			},
@@ -281,7 +281,7 @@ func Test_account_shell(t *testing.T) {
 		},
 		{
 			name: "from stdin",
-			acct: &account{
+			acct: &Account{
 				Object: "object",
 				Value:  "value",
 				key:    "key",

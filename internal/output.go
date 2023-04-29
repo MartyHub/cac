@@ -12,7 +12,7 @@ const (
 	rw  = 0o600
 )
 
-func fileOutput(accounts []account, output string) error {
+func fileOutput(accounts []Account, output string) error {
 	err := os.MkdirAll(output, rwx)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func fileOutput(accounts []account, output string) error {
 	return nil
 }
 
-func jsonOutput(accounts []account) (string, error) {
+func jsonOutput(accounts []Account) (string, error) {
 	bytes, err := json.MarshalIndent(accounts, "", "  ")
 	if err != nil {
 		return "", err
@@ -37,7 +37,7 @@ func jsonOutput(accounts []account) (string, error) {
 	return string(bytes), nil
 }
 
-func shellOutput(accounts []account, fromStdin bool) string {
+func shellOutput(accounts []Account, fromStdin bool) string {
 	sb := strings.Builder{}
 
 	for i, acct := range accounts {

@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,6 +27,7 @@ func newTestParameters(t *testing.T, ts *httptest.Server) Parameters {
 	result := NewParameters()
 
 	result.AppID = "appId"
+	result.CfgName = "test"
 	result.Host = u.Host
 	result.MaxTries = 2
 	result.Objects = []string{"o1", "o2"}
@@ -60,7 +62,6 @@ func newTestClient(t *testing.T, handler http.HandlerFunc) Client {
 	ts := newTestServer(t, handler)
 
 	return Client{
-		cache:  &Cache{},
 		clock:  newFixedClock(),
 		http:   ts.Client(),
 		log:    log.New(io.Discard, "", 0),
@@ -308,7 +309,7 @@ func TestClient_readFromReader(t *testing.T) {
 		log:   log.New(io.Discard, "", 0),
 	}
 	buf := captureOutput(client)
-	in := make(chan *account, 1)
+	in := make(chan *Account, 1)
 
 	assert.Equal(
 		t,

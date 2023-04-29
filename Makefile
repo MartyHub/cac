@@ -2,7 +2,7 @@
 
 default: all
 
-all: lint test build
+all: tidy lint test build
 
 build:
 	go build -ldflags="-X 'github.com/MartyHub/cac/cmd.Version=development'" -race
@@ -21,3 +21,6 @@ mock_stop:
 
 test:
 	$(CURDIR)/scripts/test.sh $(test)
+
+tidy:
+	go mod tidy

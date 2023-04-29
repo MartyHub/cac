@@ -32,12 +32,26 @@ func newGetCommand() *cobra.Command {
 	return result
 }
 
-func completeAccount(config string, accounts []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if cache, err := internal.NewCache(config); err == nil {
-		return cache.SortedAccounts(strings.ToLower(toComplete), accounts), cobra.ShellCompDirectiveNoFileComp
+func completeAccount(config string, exclusions []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	cache, err := internal.NewDBCache()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
 	}
 
-	return nil, cobra.ShellCompDirectiveNoFileComp
+	defer cache.Close()
+
+	accounts, err := cache.SortedAccounts(config, strings.ToLower(toComplete), exclusions)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+
+	result := make([]string, len(accounts))
+
+	for i, acct := range accounts {
+		result[i] = acct.Object
+	}
+
+	return result, cobra.ShellCompDirectiveNoFileComp
 }
 
 func runGet(args []string, params internal.Parameters) error {

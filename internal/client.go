@@ -22,7 +22,6 @@ const (
 
 type Client struct {
 	clock  clock
-	cache  *Cache
 	http   *http.Client
 	log    *log.Logger // help testing
 	params Parameters
@@ -34,18 +33,8 @@ func NewClient(params Parameters) (Client, error) {
 		return Client{}, err
 	}
 
-	cache, err := NewCache(params.CfgName)
-	if err != nil {
-		return Client{}, err
-	}
-
-	clock := utcClock{}
-
-	cache.clean(clock, params.Expiry)
-
 	return Client{
-		cache: cache,
-		clock: clock,
+		clock: utcClock{},
 		http: &http.Client{
 			Timeout: params.Timeout,
 			Transport: &http.Transport{
@@ -65,12 +54,23 @@ func NewClient(params Parameters) (Client, error) {
 }
 
 func (c Client) Run() error {
+	cache, err := NewDBCache()
+	if err != nil {
+		return err
+	}
+
+	defer cache.Close()
+
+	if err = cache.clean(c.clock, c.params.Expiry); err != nil {
+		return err
+	}
+
 	size := c.poolSize()
-	in := make(chan *account, size)
-	out := make(chan *account, size)
+	in := make(chan *Account, size)
+	out := make(chan *Account, size)
 
 	for i := 0; i < size; i++ {
-		go c.worker(in, out)
+		go c.worker(cache, in, out)
 	}
 
 	count := make(chan int)
@@ -81,21 +81,18 @@ func (c Client) Run() error {
 
 	close(in)
 
-	err := c.output(accounts)
-	if err != nil {
+	if err = c.output(accounts); err != nil {
 		return err
 	}
 
-	if c.cache.exists() {
-		c.cache.merge(accounts)
-
-		return c.cache.save()
+	if err = cache.merge(c.params.CfgName, accounts); err != nil {
+		return err
 	}
 
 	return c.ok(accounts)
 }
 
-func (c Client) output(accounts []account) error {
+func (c Client) output(accounts []Account) error {
 	switch {
 	case c.params.JSON:
 		output, err := jsonOutput(accounts)
@@ -113,7 +110,7 @@ func (c Client) output(accounts []account) error {
 	return nil
 }
 
-func (c Client) read(in chan<- *account, count chan<- int) {
+func (c Client) read(in chan<- *Account, count chan<- int) {
 	if c.params.fromStdin() {
 		count <- c.readFromReader(in, os.Stdin)
 	} else {
@@ -121,7 +118,7 @@ func (c Client) read(in chan<- *account, count chan<- int) {
 	}
 }
 
-func (c Client) readFromParams(in chan<- *account) int {
+func (c Client) readFromParams(in chan<- *Account) int {
 	now := c.clock.now()
 	result := 0
 
@@ -133,7 +130,7 @@ func (c Client) readFromParams(in chan<- *account) int {
 	return result
 }
 
-func (c Client) readFromReader(in chan<- *account, reader io.Reader) int {
+func (c Client) readFromReader(in chan<- *Account, reader io.Reader) int {
 	now := c.clock.now()
 	scanner := bufio.NewScanner(reader)
 	result := 0
@@ -165,10 +162,10 @@ func (c Client) poolSize() int {
 	return c.params.MaxConns
 }
 
-func (c Client) collect(accounts <-chan *account, count <-chan int) []account {
+func (c Client) collect(accounts <-chan *Account, count <-chan int) []Account {
 	l := 0
 	lenKnown := false
-	results := make([]account, 0)
+	results := make([]Account, 0)
 
 	for !lenKnown || len(results) != l {
 		select {
@@ -186,7 +183,7 @@ func (c Client) collect(accounts <-chan *account, count <-chan int) []account {
 	return results
 }
 
-func (c Client) ok(accounts []account) error {
+func (c Client) ok(accounts []Account) error {
 	errCount := 0
 
 	for _, acct := range accounts {
@@ -202,9 +199,9 @@ func (c Client) ok(accounts []account) error {
 	return nil
 }
 
-func (c Client) worker(in chan *account, out chan<- *account) {
+func (c Client) worker(cache DBCache, in chan *Account, out chan<- *Account) {
 	for acct := range in {
-		if ca, found := c.cache.Accounts[acct.Object]; found {
+		if ca, err := cache.get(c.params.CfgName, acct.Object); err == nil {
 			acct.Error = nil
 			acct.StatusCode = ca.StatusCode
 			acct.Timestamp = ca.Timestamp
@@ -223,7 +220,7 @@ func (c Client) worker(in chan *account, out chan<- *account) {
 			c.params.Errorf("Failed to get %v", acct)
 
 			if acct.retry(c.params.MaxTries) {
-				go func(acct *account) {
+				go func(acct *Account) {
 					time.Sleep(time.Duration(acct.Try*acct.Try) * c.params.Wait)
 					in <- acct
 				}(acct)
@@ -255,7 +252,7 @@ func (c Client) query(object string) url.Values {
 	return result
 }
 
-func (c Client) get(acct *account) {
+func (c Client) get(acct *Account) {
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodGet,

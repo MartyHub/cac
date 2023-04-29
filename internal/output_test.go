@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var accounts = []account{ //nolint:gochecknoglobals
+var accounts = []Account{ //nolint:gochecknoglobals
 	{
 		Object:     "object1",
 		Value:      "value1",
