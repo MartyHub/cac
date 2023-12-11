@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_account_newTry(t *testing.T) {
@@ -18,7 +19,7 @@ func Test_account_newTry(t *testing.T) {
 
 	assert.Equal(t, "object", acct.Object)
 	assert.Equal(t, 2, acct.Try)
-	assert.Nil(t, acct.Error)
+	require.NoError(t, acct.Error)
 	assert.Zero(t, acct.StatusCode)
 }
 
@@ -90,7 +91,7 @@ func Test_account_parseError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.acct.parseError(tt.args.data)
-			assert.Equal(t, tt.acct.Error, tt.want)
+			assert.Equal(t, tt.want, tt.acct.Error)
 		})
 	}
 }

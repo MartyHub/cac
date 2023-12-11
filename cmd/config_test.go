@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_runConfigList(t *testing.T) {
@@ -17,7 +18,7 @@ func Test_runConfigList(t *testing.T) {
 	buf := &bytes.Buffer{}
 	cmd.SetOut(buf)
 
-	assert.NoError(t, runConfigList(cmd, false))
+	require.NoError(t, runConfigList(cmd, false))
 	assert.Equal(t, "json_config\n", buf.String())
 }
 

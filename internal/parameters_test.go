@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewParameters(t *testing.T) {
@@ -183,9 +184,9 @@ func TestParameters_Valid(t *testing.T) {
 			err := tt.params.Validate()
 
 			if tt.wantErr {
-				assert.ErrorIs(t, err, pflag.ErrHelp)
+				require.ErrorIs(t, err, pflag.ErrHelp)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}

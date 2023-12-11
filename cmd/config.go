@@ -26,6 +26,8 @@ const (
 	skipVerifyName     = "skip-verify"
 	timeoutName        = "timeout"
 	waitName           = "wait"
+
+	extJSON = ".json"
 )
 
 const rw = 0o600
@@ -101,7 +103,7 @@ func readConfig(name string) (internal.Config, error) {
 		return result, err
 	}
 
-	result, err = readConfigFile(filepath.Join(configHome, name+".json"))
+	result, err = readConfigFile(filepath.Join(configHome, name+extJSON))
 	if err == nil {
 		return result, nil
 	}
@@ -122,7 +124,7 @@ func readConfigAlias(configHome, alias string) (internal.Config, error) {
 	}
 
 	for _, entry := range entries {
-		if !strings.HasSuffix(entry.Name(), ".json") {
+		if !strings.HasSuffix(entry.Name(), extJSON) {
 			continue
 		}
 
@@ -182,7 +184,7 @@ func runConfigRemove(config string) error {
 		return err
 	}
 
-	return os.Remove(filepath.Join(configHome, config+".json"))
+	return os.Remove(filepath.Join(configHome, config+extJSON))
 }
 
 func newConfigSetCommand() *cobra.Command {

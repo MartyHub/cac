@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var accounts = []Account{ //nolint:gochecknoglobals
+//nolint:gochecknoglobals
+var accounts = []Account{
 	{
 		Object:     "object1",
 		Value:      "value1",
@@ -27,7 +29,7 @@ var accounts = []Account{ //nolint:gochecknoglobals
 func Test_jsonOutput(t *testing.T) {
 	output, err := jsonOutput(accounts)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(
 		t,
 		`[

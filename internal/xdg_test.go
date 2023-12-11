@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetConfigHome(t *testing.T) {
@@ -11,7 +12,7 @@ func TestGetConfigHome(t *testing.T) {
 
 	home, err := GetConfigHome()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "../.config/cac", home)
 }
 
@@ -20,6 +21,6 @@ func TestGetStateHome(t *testing.T) {
 
 	home, err := GetStateHome()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "../.config/cac", home)
 }

@@ -87,7 +87,7 @@ func TestClient_Run(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.NoError(t, client.Run())
+	require.NoError(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\no2='value for o2'\n", buf.String())
 }
 
@@ -102,7 +102,7 @@ func TestClient_Run_JSON(t *testing.T) {
 	client.params.JSON = true
 	buf := captureOutput(client)
 
-	assert.NoError(t, client.Run())
+	require.NoError(t, client.Run())
 	assert.Equal(
 		t,
 		`[
@@ -141,7 +141,7 @@ func TestClient_Run_BadRequest(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.Error(t, client.Run())
+	require.Error(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\n", buf.String())
 }
 
@@ -160,7 +160,7 @@ func TestClient_Run_InvalidJson(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.Error(t, client.Run())
+	require.Error(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\n", buf.String())
 }
 
@@ -185,7 +185,7 @@ func TestClient_Run_Retry(t *testing.T) {
 	)
 	buf := captureOutput(client)
 
-	assert.NoError(t, client.Run())
+	require.NoError(t, client.Run())
 	assert.Equal(t, "o1='value for o1'\no2='value for o2'\n", buf.String())
 	assert.Contains(t, objects, "o1")
 	assert.Contains(t, objects, "o2")
