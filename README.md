@@ -5,6 +5,7 @@ simple [CyberArk Central Credentials Provider REST client](https://docs.cyberark
 written in Go.
 
 ![build](https://github.com/MartyHub/cac/actions/workflows/go.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MartyHub/cac)](https://goreportcard.com/report/github.com/MartyHub/cac)
 
 ## Authentication
 
