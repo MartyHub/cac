@@ -179,6 +179,7 @@ func TestClient_Run_Retry(t *testing.T) {
 				_, _ = fmt.Fprintf(w, "{\"Content\": \"value for %s\"}\n", object)
 			} else {
 				objects[object] = true
+
 				w.WriteHeader(http.StatusServiceUnavailable)
 			}
 		},

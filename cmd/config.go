@@ -53,7 +53,7 @@ func newConfigListCommand() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List configurations",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runConfigList(cmd, verbose)
 		},
 	}
@@ -169,7 +169,7 @@ func newConfigRemoveCommand() *cobra.Command {
 		Aliases: []string{"rm"},
 		Args:    cobra.ExactArgs(1),
 		Short:   "Remove a configuration",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return runConfigRemove(args[0])
 		},
 		ValidArgsFunction: completeConfig,
@@ -193,7 +193,7 @@ func newConfigSetCommand() *cobra.Command {
 		Use:   "set <config>",
 		Args:  cobra.ExactArgs(1),
 		Short: "Add or update a configuration",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return runConfigSet(args[0], cfg)
 		},
 		ValidArgsFunction: completeConfig,

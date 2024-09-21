@@ -14,10 +14,14 @@ func newGetCommand() *cobra.Command {
 		Aliases: []string{"g"},
 		Args:    cobra.MinimumNArgs(1),
 		Short:   "Get accounts from CyberArk",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return runGet(args, params)
 		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(
+			cmd *cobra.Command,
+			args []string,
+			toComplete string,
+		) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
 				return completeConfig(cmd, args, toComplete)
 			}

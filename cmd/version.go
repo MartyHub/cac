@@ -16,7 +16,7 @@ func newVersionCommand() *cobra.Command {
 		Use:     "version",
 		Aliases: []string{"v"},
 		Short:   "Display version information",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			runVersion(cmd, full)
 		},
 	}

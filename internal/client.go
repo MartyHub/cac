@@ -69,7 +69,7 @@ func (c Client) Run() error {
 	in := make(chan *Account, size)
 	out := make(chan *Account, size)
 
-	for i := 0; i < size; i++ {
+	for range size {
 		go c.worker(cache, in, out)
 	}
 
@@ -124,6 +124,7 @@ func (c Client) readFromParams(in chan<- *Account) int {
 
 	for _, object := range c.params.Objects {
 		in <- newAccount(object, now, "", "", "")
+
 		result++
 	}
 
@@ -141,6 +142,7 @@ func (c Client) readFromReader(in chan<- *Account, reader io.Reader) int {
 
 		if len(groups) == lineRegexGroups {
 			in <- newAccount(groups[3], now, groups[1], groups[2], groups[4])
+
 			result++
 		} else {
 			c.log.Print(line)

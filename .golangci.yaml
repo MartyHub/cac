@@ -21,6 +21,7 @@ linters:
     - metalinter
     - module
     - performance
+    - sql
     - style
     - test
     - unused

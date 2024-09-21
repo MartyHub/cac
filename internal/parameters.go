@@ -76,7 +76,7 @@ func (p Parameters) Validate() error {
 	}
 
 	if len(errors) > 0 {
-		p.Errorf(strings.Join(errors, "\n"))
+		p.Errorf("%s", strings.Join(errors, "\n"))
 
 		return pflag.ErrHelp
 	}
